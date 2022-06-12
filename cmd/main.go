@@ -9,6 +9,15 @@ import (
 )
 
 const n = 19
+const emptySymbol = "."
+const lenPositions = 2
+const player1 = 0
+const player2 = 1
+
+type Pos struct {
+	x int
+	y int
+}
 
 func printPlayBoard(playBoard string) {
 	fmt.Println("current play board:")
@@ -21,13 +30,13 @@ func printPlayBoard(playBoard string) {
 	fmt.Println()
 }
 
-func parsePositions(text string) ([]int, error) {
+func parsePositions(text string) (*Pos, error) {
 	words := strings.Fields(text)
-	if len(words) != 2 {
-		return nil, fmt.Errorf("need 2 positions")
+	if len(words) != lenPositions {
+		return nil, fmt.Errorf("need %d positions", lenPositions)
 	}
-	var pos []int
-	for _, word := range words {
+	var pos = Pos{}
+	for i, word := range words {
 		num, err := strconv.Atoi(word)
 		if err != nil {
 			return nil, fmt.Errorf("invalid positions %s", err)
@@ -35,33 +44,36 @@ func parsePositions(text string) ([]int, error) {
 		if num >= n || num < 0 {
 			return nil, fmt.Errorf("invalid positions, can be from 0 to 18")
 		}
-		pos = append(pos, num)
+		if i == 0 {
+			pos.x = num
+		} else if i == 1 {
+			pos.y = num
+		}
 	}
-	return pos, nil
+	return &pos, nil
 }
 
-func putStone(playBoard string, pos []int) (string, error) {
+func putStone(playBoard string, pos *Pos, currentPlayer int) (string, error) {
 
-	i := pos[0]
-	j := pos[1]
-	index := j * n + i
+	index := pos.y * n + pos.x
 	fmt.Println(index)
-	if playBoard[index] != '.' {
+	if string(playBoard[index]) != emptySymbol {
 		return "", fmt.Errorf("position is busy")
 	}
 
-	newPlayBoard := strings.Join([]string{playBoard[:index], string("1"), playBoard[index+1:]}, "")
+	newPlayBoard := strings.Join([]string{playBoard[:index], strconv.FormatInt(int64(currentPlayer), 10), playBoard[index+1:]}, "")
 
 	return newPlayBoard, nil
 }
 
 func main() {
 	fmt.Println("it's gomoku, let's play")
-	var playBoard = strings.Repeat(".", n*n)
+	var playBoard = strings.Repeat(emptySymbol, n*n)
 	printPlayBoard(playBoard)
-	currentPlayer := false //TODO 0-1
+	currentPlayer := player1
+	anotherPlayer := player2
 	reader := bufio.NewReader(os.Stdin)
-	for true {
+	for true { //TODO for not over
 		fmt.Println("Player ", currentPlayer, ", enter positions (like 1 2):")
 		text, _ := reader.ReadString('\n')
 		pos, err := parsePositions(text)
@@ -69,13 +81,13 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		newPlayBoard, err := putStone(playBoard, pos)
+		newPlayBoard, err := putStone(playBoard, pos, currentPlayer)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 		playBoard = newPlayBoard
 		printPlayBoard(playBoard)
-		currentPlayer = !currentPlayer
+		currentPlayer, anotherPlayer = anotherPlayer, currentPlayer
 	}
 }
