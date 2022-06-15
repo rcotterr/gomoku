@@ -112,6 +112,21 @@ func checkFive(playBoard string, i int, symbol string) bool {
 		return true
 	}
 
+	count = 1
+	j = i + n - 1
+	for j % n  < i % n { //while column j < column i
+		if string(playBoard[j]) == symbol {
+			count += 1
+		} else {
+			break
+		}
+		j += n - 1
+	}
+	if count >= 5 {
+		fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
+		return true
+	}
+
 	return false
 	//TO DO add possibleCapture
 	// 6 stones and capture only in 6
