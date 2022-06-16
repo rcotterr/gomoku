@@ -53,6 +53,28 @@ func parsePositions(text string) (*Pos, error) {
 	return &pos, nil
 }
 
+func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
+	//thirdStoneCurrentPlayer := false
+
+	// parse —
+	j := index + 3
+	if j / n == index / n && string(playBoard[j]) == currentPlayer { //TO DO check j is exactly not out of n*n
+		//thirdStoneCurrentPlayer = true
+		step := (j - index) / 2
+		index1 := index + step
+		index2 := index + step * 2
+		symbol1 := string(playBoard[index1])
+		symbol2 := string(playBoard[index2])
+
+		if symbol1 != currentPlayer && symbol1 != emptySymbol && symbol2 != currentPlayer && symbol2 != emptySymbol { //TO DO check another player
+			return true, &index1, &index2
+		}
+		fmt.Println(index1, index2)
+	}
+
+	return false, nil, nil
+}
+
 func putStone(playBoard string, pos *Pos, currentPlayer string) (string, error) {
 
 	index := pos.y * n + pos.x
@@ -62,6 +84,11 @@ func putStone(playBoard string, pos *Pos, currentPlayer string) (string, error) 
 	}
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer, playBoard[index+1:]}, "")
+
+	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer)
+	if capture {
+		fmt.Println("Capture: ", capture, *index1, *index2)
+	}
 
 	return newPlayBoard, nil
 }
