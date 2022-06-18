@@ -11,11 +11,15 @@ const EmptySymbol = "."
 const lenPositions = 2
 const Player1 = "0"
 const Player2 = "1"
+const numOfCaptureStone = 2
+const nextFromCapturedStone = numOfCaptureStone + 1
 
 type Pos struct {
 	x int
 	y int
 }
+
+type conditionFn func(int, int) bool
 
 func PrintPlayBoard(playBoard string) {
 	fmt.Println("current play board:")
@@ -51,14 +55,14 @@ func ParsePositions(text string) (*Pos, error) {
 	return &pos, nil
 }
 
-func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
-	//thirdStoneCurrentPlayer := false
+func conditionHorizontalCapture(j int, i int) bool {
+	return j/N == i/N //if the same string
+}
 
-	// parse —
-	j := index + 3
-	if j/N == index/N && string(playBoard[j]) == currentPlayer { //TO DO check j is exactly not out of n*n
-		//thirdStoneCurrentPlayer = true
-		step := (j - index) / 2
+func checkCapturedByCondition(step int, condition conditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
+	j := index + nextFromCapturedStone*step
+
+	if condition(j, index) && j < N*N && string(playBoard[j]) == currentPlayer {
 		index1 := index + step
 		index2 := index + step*2
 		symbol1 := string(playBoard[index1])
@@ -68,6 +72,22 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 			return true, &index1, &index2
 		}
 		fmt.Println(index1, index2)
+	}
+	return false, nil, nil
+}
+
+func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
+	setRules := map[int]conditionFn{
+		1: conditionHorizontalCapture,
+		//N:     conditionVertical,
+		//N + 1: conditionRightDiagonal,
+		//N - 1: conditionLeftDiagonal,
+	}
+
+	for step, condition := range setRules {
+		if isCapture, index1, index2 := checkCapturedByCondition(step, condition, playBoard, index, currentPlayer); isCapture {
+			return isCapture, index1, index2
+		}
 	}
 
 	return false, nil, nil
@@ -90,8 +110,6 @@ func PutStone(playBoard string, pos *Pos, currentPlayer string) (string, error) 
 
 	return newPlayBoard, nil
 }
-
-type conditionFn func(int, int) bool
 
 func FiveInRow(i int, step int, condition conditionFn, playBoard string, symbol string) bool {
 	count := 1 //TO DO add if i % n + 5 >= n
