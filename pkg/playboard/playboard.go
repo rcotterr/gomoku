@@ -91,84 +91,69 @@ func PutStone(playBoard string, pos *Pos, currentPlayer string) (string, error) 
 	return newPlayBoard, nil
 }
 
-func checkFive(playBoard string, i int, symbol string) bool {
+type conditionFn func(int, int) bool
+
+func FiveInRow(i int, step int, condition conditionFn, playBoard string, symbol string) bool {
 	count := 1 //TO DO add if i % n + 5 >= n
-	j := i + 1
-	for j%N != 0 && j < N*N {
+	j := i + step
+	for condition(j, i) && j < N*N {
 		if string(playBoard[j]) == symbol {
 			count += 1
 		} else {
 			break
 		}
-		j += 1
+		j += step
 	}
 	if count >= 5 {
 		fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
 		return true
+	}
+	return false
+}
+
+func conditionHorizontal(j int, _ int) bool {
+	return j%N != 0
+}
+
+func conditionVertical(j int, _ int) bool {
+	return j/N != N
+}
+
+func conditionRightDiagonal(j int, _ int) bool {
+	return j < N*N
+}
+
+func conditionLeftDiagonal(j int, i int) bool {
+	return j%N < i%N
+}
+
+func checkFive(playBoard string, i int, symbol string) bool {
+
+	setRules := map[int]conditionFn{
+		1:     conditionHorizontal,
+		N:     conditionVertical,
+		N + 1: conditionRightDiagonal,
+		N - 1: conditionLeftDiagonal,
 	}
 
-	count = 1
-	j = i + N
-	for j/N != N && j < N*N {
-		if string(playBoard[j]) == symbol {
-			count += 1
-		} else {
-			break
+	for step, condition := range setRules {
+		if FiveInRow(i, step, condition, playBoard, symbol) {
+			return true
 		}
-		j += N
-	}
-	if count >= 5 {
-		fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
-		return true
-	}
-
-	count = 1
-	j = i + N + 1
-	for j < N*N {
-		if string(playBoard[j]) == symbol {
-			count += 1
-		} else {
-			break
-		}
-		j += N + 1
-	}
-	if count >= 5 {
-		fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
-		return true
-	}
-
-	count = 1
-	j = i + N - 1
-	for j%N < i%N && j < N*N { //while column j < column i
-		if string(playBoard[j]) == symbol {
-			count += 1
-		} else {
-			break
-		}
-		j += N - 1
-	}
-	if count >= 5 {
-		fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
-		return true
 	}
 
 	return false
 	//TO DO add possibleCapture
 	// 6 stones and capture only in 6
 	// test not sequence
-	// check panic: runtime error: index out of range
+	//TO DO check only from new stone
 }
 
 func IsOver(playBoard string) bool {
-	for i, val := range playBoard {
-		if string(val) == Player1 {
-			if checkFive(playBoard, i, Player1) {
-				return true
-			}
-			i += 1
-		}
-		if string(val) == Player2 {
-			if checkFive(playBoard, i, Player2) {
+	for i, val := range playBoard { // TO DO not all check but only 1 last put stone
+		value := string(val)
+		if value == Player1 || value == Player2 {
+			if checkFive(playBoard, i, value) {
 				return true
 			}
 			i += 1
