@@ -240,7 +240,7 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 			index:             0,
-			currentPlayer:     Player1,
+			currentPlayer:     SymbolPlayer1,
 			expectedIsCapture: true,
 			expectedIndex1:    1,
 			expectedIndex2:    2,
@@ -268,7 +268,7 @@ func TestIsCapture(t *testing.T) {
 				"...............1001",
 
 			index:             357,
-			currentPlayer:     Player2,
+			currentPlayer:     SymbolPlayer2,
 			expectedIsCapture: true,
 			expectedIndex1:    358,
 			expectedIndex2:    359,
@@ -296,7 +296,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             22,
-			currentPlayer:     Player1,
+			currentPlayer:     SymbolPlayer1,
 			expectedIsCapture: true,
 			expectedIndex1:    42,
 			expectedIndex2:    62,
@@ -324,7 +324,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             28,
-			currentPlayer:     Player1,
+			currentPlayer:     SymbolPlayer1,
 			expectedIsCapture: true,
 			expectedIndex1:    46,
 			expectedIndex2:    64,
@@ -352,7 +352,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             28,
-			currentPlayer:     Player2,
+			currentPlayer:     SymbolPlayer2,
 			expectedIsCapture: true,
 			expectedIndex1:    47,
 			expectedIndex2:    66,
@@ -380,7 +380,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             28,
-			currentPlayer:     Player2,
+			currentPlayer:     SymbolPlayer2,
 			expectedIsCapture: true,
 			expectedIndex1:    27,
 			expectedIndex2:    26,
@@ -408,7 +408,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             85,
-			currentPlayer:     Player2,
+			currentPlayer:     SymbolPlayer2,
 			expectedIsCapture: true,
 			expectedIndex1:    66,
 			expectedIndex2:    47,
@@ -436,7 +436,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             82,
-			currentPlayer:     Player1,
+			currentPlayer:     SymbolPlayer1,
 			expectedIsCapture: true,
 			expectedIndex1:    62,
 			expectedIndex2:    42,
@@ -464,7 +464,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             82,
-			currentPlayer:     Player1,
+			currentPlayer:     SymbolPlayer1,
 			expectedIsCapture: true,
 			expectedIndex1:    64,
 			expectedIndex2:    46,
@@ -493,7 +493,7 @@ func TestIsCapture(t *testing.T) {
 				"................0..",
 
 			index:             318,
-			currentPlayer:     Player2,
+			currentPlayer:     SymbolPlayer2,
 			expectedIsCapture: false,
 		},
 		{
@@ -519,7 +519,7 @@ func TestIsCapture(t *testing.T) {
 				"...................",
 
 			index:             2,
-			currentPlayer:     Player2,
+			currentPlayer:     SymbolPlayer2,
 			expectedIsCapture: false,
 		},
 	}
@@ -542,12 +542,13 @@ func TestIsCapture(t *testing.T) {
 
 func TestPutStone(t *testing.T) {
 	testCases := []struct {
-		name              string
-		playboard         string
-		pos               *Pos
-		currentPlayer     string
-		expectedNewSymbol map[int]string
-		expectedError     error
+		name                string
+		playboard           string
+		pos                 *Pos
+		currentPlayer       Player
+		expectedNewSymbol   map[int]string
+		expectedNumCaptures int
+		expectedError       error
 	}{
 		{
 			name: "is capture player 0",
@@ -571,23 +572,25 @@ func TestPutStone(t *testing.T) {
 				"..................." +
 				"...................",
 			pos:           &Pos{0, 0},
-			currentPlayer: Player1,
+			currentPlayer: Player{0, SymbolPlayer1},
 			expectedNewSymbol: map[int]string{
 				0: "0",
 				1: ".",
 				2: ".",
 			},
-			expectedError: nil,
+			expectedNumCaptures: 1,
+			expectedError:       nil,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			newPlayboard, err := PutStone(tc.playboard, tc.pos, tc.currentPlayer)
+			newPlayboard, err := PutStone(tc.playboard, tc.pos, &tc.currentPlayer)
 
 			for index, symbol := range tc.expectedNewSymbol {
 				assert.Equal(t, symbol, string(newPlayboard[index]))
 			}
+			assert.Equal(t, tc.expectedNumCaptures, tc.currentPlayer.captures)
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}

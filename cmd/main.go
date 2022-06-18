@@ -24,7 +24,7 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		newPlayBoard, err := playboard.PutStone(playBoard, pos, currentPlayer)
+		newPlayBoard, err := playboard.PutStone(playBoard, pos, &currentPlayer)
 		if err != nil {
 			fmt.Println(err)
 			continue

@@ -9,10 +9,18 @@ import (
 const N = 19
 const EmptySymbol = "."
 const lenPositions = 2
-const Player1 = "0"
-const Player2 = "1"
+const SymbolPlayer1 = "0"
+const SymbolPlayer2 = "1"
 const numOfCaptureStone = 2
 const nextFromCapturedStone = numOfCaptureStone + 1
+
+type Player struct {
+	captures int
+	symbol   string
+}
+
+var Player1 = Player{captures: 0, symbol: SymbolPlayer1}
+var Player2 = Player{captures: 0, symbol: SymbolPlayer2}
 
 type Pos struct {
 	x int
@@ -101,7 +109,7 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 	return false, nil, nil
 }
 
-func PutStone(playBoard string, pos *Pos, currentPlayer string) (string, error) {
+func PutStone(playBoard string, pos *Pos, currentPlayer *Player) (string, error) {
 
 	index := pos.y*N + pos.x
 	fmt.Println(index)
@@ -109,16 +117,16 @@ func PutStone(playBoard string, pos *Pos, currentPlayer string) (string, error) 
 		return "", fmt.Errorf("position is busy")
 	}
 
-	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer, playBoard[index+1:]}, "")
+	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.symbol, playBoard[index+1:]}, "")
 
-	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer)
+	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.symbol)
 	if capture {
 		fmt.Println("Capture: ", capture, *index1, *index2)
 		if *index1 > *index2 {
 			index1, index2 = index2, index1
 		}
 		newPlayBoard = strings.Join([]string{newPlayBoard[:*index1], EmptySymbol, newPlayBoard[*index1+1 : *index2], EmptySymbol, newPlayBoard[*index2+1:]}, "")
-		// TO DO make in one string by sorted indexes
+		currentPlayer.captures += 1
 	}
 
 	return newPlayBoard, nil
@@ -186,7 +194,7 @@ func checkFive(playBoard string, i int, symbol string) bool {
 func IsOver(playBoard string) bool {
 	for i, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
 		value := string(val)
-		if value == Player1 || value == Player2 {
+		if value == SymbolPlayer1 || value == SymbolPlayer2 {
 			if checkFive(playBoard, i, value) {
 				return true
 			}
