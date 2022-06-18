@@ -35,8 +35,12 @@ func main() {
 	}
 }
 
+//Possible optimizations from aromny-w:
+//make array of stone structure
+//bits operations
+
 //Bonuses
 //- players' names
 //- tests
-//
+//- choose colour for player instead of machine
 //

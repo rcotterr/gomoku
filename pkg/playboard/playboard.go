@@ -143,9 +143,8 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	}
 
 	return false
-	//TO DO add possibleCapture
+	//TO DO add possibleCapture than not win
 	// 6 stones and capture only in 6
-	// test not sequence
 	//TO DO check only from new stone
 }
 
