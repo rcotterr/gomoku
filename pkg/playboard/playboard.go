@@ -59,6 +59,10 @@ func conditionHorizontalCapture(j int, i int) bool {
 	return j/N == i/N //if the same string
 }
 
+func conditionRightDiagonalCapture(j int, _ int) bool {
+	return j < N*N //till not out of index
+}
+
 func checkCapturedByCondition(step int, condition conditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	j := index + nextFromCapturedStone*step
 
@@ -78,10 +82,10 @@ func checkCapturedByCondition(step int, condition conditionFn, playBoard string,
 
 func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	setRules := map[int]conditionFn{
-		1: conditionHorizontalCapture,
-		//N:     conditionVertical,
-		//N + 1: conditionRightDiagonal,
-		//N - 1: conditionLeftDiagonal,
+		1:     conditionHorizontalCapture,
+		N:     conditionVertical,
+		N + 1: conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		N - 1: conditionLeftDiagonal,
 	}
 
 	for step, condition := range setRules {

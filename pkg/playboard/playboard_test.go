@@ -273,6 +273,34 @@ func TestIsCapture(t *testing.T) {
 			expectedIndex1:    358,
 			expectedIndex2:    359,
 		},
+		{
+			name: "is capture right diagonal",
+			playboard: "..................." +
+				"...0..............." +
+				"....1.............." +
+				".....1............." +
+				"......0............" +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+
+			index:             22,
+			currentPlayer:     Player1,
+			expectedIsCapture: true,
+			expectedIndex1:    42,
+			expectedIndex2:    62,
+		},
 		//{
 		//	name: "is over horizontal",
 		//	playboard: "..................." +
@@ -411,6 +439,32 @@ func TestIsCapture(t *testing.T) {
 		//		"............11.....",
 		//	expectedIsCapture: false,
 		//},
+		{
+			name: "is not capture right diagonal",
+			playboard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..............1...." +
+				"...............0..." +
+				"................0..",
+
+			index:             318,
+			currentPlayer:     Player2,
+			expectedIsCapture: false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -419,8 +473,12 @@ func TestIsCapture(t *testing.T) {
 			isCapture, index1, index2 := isCaptured(tc.playboard, tc.index, tc.currentPlayer)
 
 			assert.Equal(t, tc.expectedIsCapture, isCapture)
-			assert.Equal(t, tc.expectedIndex1, *index1)
-			assert.Equal(t, tc.expectedIndex2, *index2)
+			if isCapture {
+				assert.Equal(t, &tc.expectedIndex1, index1)
+				assert.Equal(t, &tc.expectedIndex2, index2)
+			}
 		})
 	}
 }
+
+//TO DO name not playBoard in fail
