@@ -149,7 +149,7 @@ func checkFive(playBoard string, i int, symbol string) bool {
 }
 
 func IsOver(playBoard string) bool {
-	for i, val := range playBoard { // TO DO not all check but only 1 last put stone
+	for i, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
 		value := string(val)
 		if value == Player1 || value == Player2 {
 			if checkFive(playBoard, i, value) {
