@@ -43,4 +43,4 @@ func main() {
 //- players' names
 //- tests
 //- choose colour for player instead of machine
-//
+//- some words in win

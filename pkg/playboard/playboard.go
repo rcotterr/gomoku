@@ -213,6 +213,9 @@ func IsOver(playBoard string, player1 *Player, player2 *Player) bool {
 		}
 	}
 
-	//add no space left
+	if containEmpty := strings.Contains(playBoard, EmptySymbol); !containEmpty {
+		fmt.Println("Game is over, no space left, both players win")
+		return true
+	}
 	return false
 }
