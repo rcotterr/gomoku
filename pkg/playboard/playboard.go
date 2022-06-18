@@ -114,6 +114,11 @@ func PutStone(playBoard string, pos *Pos, currentPlayer string) (string, error) 
 	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer)
 	if capture {
 		fmt.Println("Capture: ", capture, *index1, *index2)
+		if *index1 > *index2 {
+			index1, index2 = index2, index1
+		}
+		newPlayBoard = strings.Join([]string{newPlayBoard[:*index1], EmptySymbol, newPlayBoard[*index1+1 : *index2], EmptySymbol, newPlayBoard[*index2+1:]}, "")
+		// TO DO make in one string by sorted indexes
 	}
 
 	return newPlayBoard, nil

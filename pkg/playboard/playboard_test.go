@@ -497,7 +497,7 @@ func TestIsCapture(t *testing.T) {
 			expectedIsCapture: false,
 		},
 		{
-			name: "is capture vertical",
+			name: "is not capture full",
 			playboard: "001................." +
 				"..................." +
 				"..................." +
@@ -539,3 +539,56 @@ func TestIsCapture(t *testing.T) {
 }
 
 //TO DO name not playBoard in fail
+
+func TestPutStone(t *testing.T) {
+	testCases := []struct {
+		name              string
+		playboard         string
+		pos               *Pos
+		currentPlayer     string
+		expectedNewSymbol map[int]string
+		expectedError     error
+	}{
+		{
+			name: "is capture player 0",
+			playboard: ".110.............." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			pos:           &Pos{0, 0},
+			currentPlayer: Player1,
+			expectedNewSymbol: map[int]string{
+				0: "0",
+				1: ".",
+				2: ".",
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.playboard, func(t *testing.T) {
+
+			newPlayboard, err := PutStone(tc.playboard, tc.pos, tc.currentPlayer)
+
+			for index, symbol := range tc.expectedNewSymbol {
+				assert.Equal(t, symbol, string(newPlayboard[index]))
+			}
+			assert.Equal(t, tc.expectedError, err)
+		})
+	}
+}
