@@ -112,19 +112,19 @@ func FiveInRow(i int, step int, condition conditionFn, playBoard string, symbol 
 }
 
 func conditionHorizontal(j int, _ int) bool {
-	return j%N != 0
+	return j%N != 0 //till next row
 }
 
 func conditionVertical(j int, _ int) bool {
-	return j/N != N
+	return j/N != N //till last + 1 raw
 }
 
 func conditionRightDiagonal(j int, _ int) bool {
-	return j < N*N
+	return j < N*N //till not out of index
 }
 
 func conditionLeftDiagonal(j int, i int) bool {
-	return j%N < i%N
+	return j%N < i%N //till column of left put stones less than start stone index
 }
 
 func checkFive(playBoard string, i int, symbol string) bool {
