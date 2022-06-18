@@ -56,11 +56,11 @@ func ParsePositions(text string) (*Pos, error) {
 }
 
 func conditionHorizontalCapture(j int, i int) bool {
-	return j/N == i/N //if the same string
+	return j >= 0 && j/N == i/N //if the same string
 }
 
 func conditionRightDiagonalCapture(j int, _ int) bool {
-	return j < N*N //till not out of index
+	return j > 0 && j < N*N //till not out of index
 }
 
 func checkCapturedByCondition(step int, condition conditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
@@ -82,10 +82,14 @@ func checkCapturedByCondition(step int, condition conditionFn, playBoard string,
 
 func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	setRules := map[int]conditionFn{
-		1:     conditionHorizontalCapture,
-		N:     conditionVertical,
-		N + 1: conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
-		N - 1: conditionLeftDiagonal,
+		1:      conditionHorizontalCapture,
+		N:      conditionVertical,
+		N + 1:  conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		N - 1:  conditionLeftDiagonal,
+		-1:     conditionHorizontalCapture,
+		-N:     conditionVertical,
+		-N - 1: conditionRightDiagonalCapture,
+		-N + 1: conditionLeftUpperDiagonal,
 	}
 
 	for step, condition := range setRules {
@@ -138,7 +142,7 @@ func conditionHorizontal(j int, _ int) bool {
 }
 
 func conditionVertical(j int, _ int) bool {
-	return j/N != N //till last + 1 raw
+	return j >= 0 && j/N != N //till last + 1 raw
 }
 
 func conditionRightDiagonal(j int, _ int) bool {
@@ -147,6 +151,10 @@ func conditionRightDiagonal(j int, _ int) bool {
 
 func conditionLeftDiagonal(j int, i int) bool {
 	return j%N < i%N //till column of left put stones less than start stone index
+}
+
+func conditionLeftUpperDiagonal(j int, i int) bool {
+	return j > 0 && j%N > i%N //till column of right(left upper) put stones more than start stone index
 }
 
 func checkFive(playBoard string, i int, symbol string) bool {
