@@ -12,6 +12,7 @@ const lenPositions = 2
 const SymbolPlayer1 = "0"
 const SymbolPlayer2 = "1"
 const numOfCaptureStone = 2
+const numOfCaptureStoneToWin = 10
 const nextFromCapturedStone = numOfCaptureStone + 1
 
 type Player struct {
@@ -191,7 +192,14 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	//TO DO check only from new stone
 }
 
-func IsOver(playBoard string) bool {
+func IsOver(playBoard string, player1 *Player, player2 *Player) bool {
+	for _, player := range [2]*Player{player1, player2} {
+		if player != nil && player.captures >= numOfCaptureStoneToWin/numOfCaptureStone {
+			fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.symbol)
+			return true
+		}
+	}
+
 	for i, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
 		value := string(val)
 		if value == SymbolPlayer1 || value == SymbolPlayer2 {
@@ -205,7 +213,6 @@ func IsOver(playBoard string) bool {
 		}
 	}
 
-	//TO DO add 10 captured
 	//add no space left
 	return false
 }

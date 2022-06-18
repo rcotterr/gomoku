@@ -16,7 +16,7 @@ func main() {
 	currentPlayer := playboard.Player1
 	anotherPlayer := playboard.Player2
 	reader := bufio.NewReader(os.Stdin)
-	for !playboard.IsOver(playBoard) {
+	for !playboard.IsOver(playBoard, &currentPlayer, &anotherPlayer) {
 		fmt.Println("Player ", currentPlayer, ", enter positions (like 1 2):")
 		text, _ := reader.ReadString('\n')
 		pos, err := playboard.ParsePositions(text)

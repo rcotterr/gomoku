@@ -8,9 +8,11 @@ import (
 
 func TestIsOver(t *testing.T) {
 	testCases := []struct {
-		name              string
-		playboard         string
-		expectedIsCapture bool
+		name           string
+		playboard      string
+		expectedIsOver bool
+		player1        *Player
+		player2        *Player
 	}{
 		{
 			name: "is over player 1",
@@ -33,7 +35,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			expectedIsCapture: true,
+			expectedIsOver: true,
 		},
 		{
 			name: "is over player 0",
@@ -56,7 +58,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"..............00000",
-			expectedIsCapture: true,
+			expectedIsOver: true,
 		},
 		{
 			name: "is over horizontal",
@@ -79,7 +81,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			expectedIsCapture: true,
+			expectedIsOver: true,
 		},
 		{
 			name: "is over vertical",
@@ -102,7 +104,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			expectedIsCapture: true,
+			expectedIsOver: true,
 		},
 		{
 			name: "is over right diagonal",
@@ -125,7 +127,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			expectedIsCapture: true,
+			expectedIsOver: true,
 		},
 		{
 			name: "is over left diagonal",
@@ -148,7 +150,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			expectedIsCapture: true,
+			expectedIsOver: true,
 		},
 		{
 			name: "is not over1",
@@ -171,7 +173,7 @@ func TestIsOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			expectedIsCapture: false,
+			expectedIsOver: false,
 		},
 		{
 			name: "is not over2",
@@ -194,16 +196,66 @@ func TestIsOver(t *testing.T) {
 				"............1......" +
 				"............1......" +
 				"............11.....",
-			expectedIsCapture: false,
+			expectedIsOver: false,
+		},
+		{
+			name: "is over by captures",
+			playboard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			expectedIsOver: true,
+			player1:        &Player{0, SymbolPlayer1},
+			player2:        &Player{5, SymbolPlayer2},
+		},
+		{
+			name: "is over by captures",
+			playboard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			expectedIsOver: true,
+			player1:        &Player{5, SymbolPlayer1},
+			player2:        &Player{0, SymbolPlayer2},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			isOver := IsOver(tc.playboard)
+			isOver := IsOver(tc.playboard, tc.player1, tc.player2)
 
-			assert.Equal(t, tc.expectedIsCapture, isOver)
+			assert.Equal(t, tc.expectedIsOver, isOver)
 		})
 	}
 }
