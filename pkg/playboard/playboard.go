@@ -158,9 +158,9 @@ func isFreeThree(step int, condition conditionFn, playBoard string, index int, c
 
 func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	setRules := map[int]conditionFn{
-		1: conditionHorizontalCapture,
-		N: conditionVertical,
-		//N + 1:  conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		1:     conditionHorizontalCapture,
+		N:     conditionVertical,
+		N + 1: conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
 		//N - 1:  conditionLeftDiagonal,
 		//-1:     conditionHorizontalCapture,
 		//-N:     conditionVertical,
