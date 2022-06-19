@@ -573,7 +573,7 @@ func TestIsCapture(t *testing.T) {
 		},
 		{
 			name: "is not capture full",
-			playboard: "001................." +
+			playboard: "001................" +
 				"..................." +
 				"..................." +
 				"..................." +
@@ -627,7 +627,7 @@ func TestPutStone(t *testing.T) {
 	}{
 		{
 			name: "is capture player 0",
-			playboard: ".110.............." +
+			playboard: ".110..............." +
 				"..................." +
 				"..................." +
 				"..................." +
@@ -667,6 +667,50 @@ func TestPutStone(t *testing.T) {
 			}
 			assert.Equal(t, tc.expectedNumCaptures, tc.currentPlayer.captures)
 			assert.Equal(t, tc.expectedError, err)
+		})
+	}
+}
+
+func TestIsForbidden(t *testing.T) {
+	testCases := []struct {
+		name              string
+		playboard         string
+		index             int
+		currentPlayer     Player
+		expectedForbidden bool
+	}{
+		{
+			name: "is forbidden player 0",
+			playboard: "..................." +
+				"....000............" +
+				"....0.............." +
+				"....0.............." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			currentPlayer:     Player{0, SymbolPlayer1},
+			index:             23,
+			expectedForbidden: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.playboard, func(t *testing.T) {
+
+			isForbiddenPlace := isForbidden(tc.playboard, tc.index, tc.currentPlayer.symbol)
+
+			assert.Equal(t, tc.expectedForbidden, isForbiddenPlace)
 		})
 	}
 }
