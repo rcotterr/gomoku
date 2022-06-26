@@ -11,6 +11,7 @@ const EmptySymbol = "."
 const lenPositions = 2
 const SymbolPlayer1 = "0"
 const SymbolPlayer2 = "1"
+const SymbolPlayerMachine = "M"
 const numOfCaptureStone = 2
 const numOfCaptureStoneToWin = 10
 const nextFromCapturedStone = numOfCaptureStone + 1
@@ -23,10 +24,11 @@ type Player struct {
 
 var Player1 = Player{captures: 0, symbol: SymbolPlayer1}
 var Player2 = Player{captures: 0, symbol: SymbolPlayer2}
+var MachinePlayer = Player{captures: 0, symbol: SymbolPlayerMachine}
 
 type Pos struct {
-	x int
-	y int
+	X int
+	Y int
 }
 
 type conditionFn func(int, int) bool
@@ -57,9 +59,9 @@ func ParsePositions(text string) (*Pos, error) {
 			return nil, fmt.Errorf("invalid positions, can be from 0 to 18")
 		}
 		if i == 0 {
-			pos.x = num
+			pos.X = num
 		} else if i == 1 {
-			pos.y = num
+			pos.Y = num
 		}
 	}
 	return &pos, nil
@@ -85,7 +87,7 @@ func checkCapturedByCondition(step int, condition conditionFn, playBoard string,
 		if symbol1 != currentPlayer && symbol1 != EmptySymbol && symbol2 != currentPlayer && symbol2 != EmptySymbol { //TO DO check another player
 			return true, &index1, &index2
 		}
-		fmt.Println(index1, index2)
+		//fmt.Println(index1, index2)
 	}
 	return false, nil, nil
 }
@@ -188,8 +190,8 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 
 func PutStone(playBoard string, pos *Pos, currentPlayer *Player) (string, error) {
 
-	index := pos.y*N + pos.x
-	fmt.Println(index)
+	index := pos.Y*N + pos.X
+	//fmt.Println(index)
 	if string(playBoard[index]) != EmptySymbol {
 		return "", fmt.Errorf("position is busy")
 	}
