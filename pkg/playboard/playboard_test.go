@@ -659,13 +659,14 @@ func TestPutStone(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
+			index := tc.pos.Y*N + tc.pos.X
 
-			newPlayboard, err := PutStone(tc.playboard, tc.pos, &tc.currentPlayer)
+			newPlayboard, err := PutStone(tc.playboard, index, &tc.currentPlayer)
 
 			for index, symbol := range tc.expectedNewSymbol {
 				assert.Equal(t, symbol, string(newPlayboard[index]))
 			}
-			assert.Equal(t, tc.expectedNumCaptures, tc.currentPlayer.captures)
+			assert.Equal(t, tc.expectedNumCaptures, tc.currentPlayer.Captures)
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}
@@ -808,7 +809,7 @@ func TestIsForbidden(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			isForbiddenPlace := isForbidden(tc.playboard, tc.index, tc.currentPlayer.symbol)
+			isForbiddenPlace := isForbidden(tc.playboard, tc.index, tc.currentPlayer.Symbol)
 
 			assert.Equal(t, tc.expectedForbidden, isForbiddenPlace)
 		})

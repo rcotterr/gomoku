@@ -16,7 +16,9 @@ func HumanTurn(reader *bufio.Reader, currentPlayer playboard.Player, playBoard s
 	if err != nil {
 		return "", err
 	}
-	newPlayBoard, err := playboard.PutStone(playBoard, pos, &currentPlayer)
+
+	index := pos.Y*playboard.N + pos.X
+	newPlayBoard, err := playboard.PutStone(playBoard, index, &currentPlayer)
 	if err != nil {
 		return "", err
 	}
@@ -52,8 +54,8 @@ func AIPlay() {
 	var newPlayBoard string
 	for !playboard.IsOver(playBoard, &machinePlayer, &humanPlayer) {
 		if machineTurn {
-			machinePos := algo.MinMaxAlgo(playBoard, machinePlayer, humanPlayer)
-			playBoard, err = playboard.PutStone(playBoard, machinePos, &machinePlayer)
+			machineIndex := algo.MinMaxAlgo(playBoard, machinePlayer, humanPlayer)
+			playBoard, err = playboard.PutStone(playBoard, machineIndex, &machinePlayer)
 			if err != nil {
 				fmt.Println("Invalid machine algo!!!!!", err)
 				return

@@ -18,20 +18,20 @@ const nextFromCapturedStone = numOfCaptureStone + 1
 const numOfCheckFreeThree = 3
 
 type Player struct {
-	captures int
-	symbol   string
+	Captures int
+	Symbol   string
 }
 
-var Player1 = Player{captures: 0, symbol: SymbolPlayer1}
-var Player2 = Player{captures: 0, symbol: SymbolPlayer2}
-var MachinePlayer = Player{captures: 0, symbol: SymbolPlayerMachine}
+var Player1 = Player{Captures: 0, Symbol: SymbolPlayer1}
+var Player2 = Player{Captures: 0, Symbol: SymbolPlayer2}
+var MachinePlayer = Player{Captures: 0, Symbol: SymbolPlayerMachine}
 
 type Pos struct {
 	X int
 	Y int
 }
 
-type conditionFn func(int, int) bool
+type ConditionFn func(int, int) bool
 
 func PrintPlayBoard(playBoard string) {
 	fmt.Println("current play board:")
@@ -67,15 +67,15 @@ func ParsePositions(text string) (*Pos, error) {
 	return &pos, nil
 }
 
-func conditionHorizontalCapture(j int, i int) bool {
+func ConditionHorizontalCapture(j int, i int) bool {
 	return j >= 0 && j/N == i/N //if the same string
 }
 
-func conditionRightDiagonalCapture(j int, _ int) bool { // diagonal is \
+func ConditionRightDiagonalCapture(j int, _ int) bool { // diagonal is \
 	return j >= 0 && j < N*N //till not out of index
 }
 
-func checkCapturedByCondition(step int, condition conditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
+func checkCapturedByCondition(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	j := index + nextFromCapturedStone*step
 
 	if condition(j, index) && j >= 0 && j < N*N && string(playBoard[j]) == currentPlayer {
@@ -93,15 +93,15 @@ func checkCapturedByCondition(step int, condition conditionFn, playBoard string,
 }
 
 func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
-	setRules := map[int]conditionFn{
-		1:      conditionHorizontalCapture,
-		N:      conditionVertical,
-		N + 1:  conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
-		N - 1:  conditionLeftDiagonal,
-		-1:     conditionHorizontalCapture,
-		-N:     conditionVertical,
-		-N - 1: conditionRightDiagonalCapture,
-		-N + 1: conditionLeftUpperDiagonal,
+	setRules := map[int]ConditionFn{
+		1:      ConditionHorizontalCapture,
+		N:      ConditionVertical,
+		N + 1:  ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		N - 1:  ConditionLeftDiagonal,
+		-1:     ConditionHorizontalCapture,
+		-N:     ConditionVertical,
+		-N - 1: ConditionRightDiagonalCapture,
+		-N + 1: ConditionLeftUpperDiagonal,
 	}
 
 	for step, condition := range setRules {
@@ -120,7 +120,7 @@ func conditionLeftDiagonalCheckFreeThree(j int, i int) bool {
 	//+1 is for empty
 }
 
-func isFreeThree(step int, condition conditionFn, playBoard string, index int, currentPlayer string) bool {
+func isFreeThree(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) bool {
 	canBeEmpty := true
 	startIndex := index + -1*numOfCheckFreeThree*step
 	endIndex := index + numOfCheckFreeThree*step
@@ -168,10 +168,10 @@ func isFreeThree(step int, condition conditionFn, playBoard string, index int, c
 }
 
 func isForbidden(playBoard string, index int, currentPlayer string) bool {
-	setRules := map[int]conditionFn{
-		1:     conditionHorizontalCapture,
-		N:     conditionVertical,
-		N + 1: conditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+	setRules := map[int]ConditionFn{
+		1:     ConditionHorizontalCapture,
+		N:     ConditionVertical,
+		N + 1: ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
 		N - 1: conditionLeftDiagonalCheckFreeThree,
 	}
 	countFreeThree := 0
@@ -188,32 +188,33 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-func PutStone(playBoard string, pos *Pos, currentPlayer *Player) (string, error) {
+//func PutStone(playBoard string, pos *Pos, currentPlayer *Player) (string, error) {
+func PutStone(playBoard string, index int, currentPlayer *Player) (string, error) {
 
-	index := pos.Y*N + pos.X
+	//index := pos.Y*N + pos.X
 	//fmt.Println(index)
 	if string(playBoard[index]) != EmptySymbol {
 		return "", fmt.Errorf("position is busy")
 	}
 
-	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.symbol, playBoard[index+1:]}, "")
+	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
 
-	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.symbol)
+	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.Symbol)
 	if capture {
 		fmt.Println("Capture: ", capture, *index1, *index2)
 		if *index1 > *index2 {
 			index1, index2 = index2, index1
 		}
 		newPlayBoard = strings.Join([]string{newPlayBoard[:*index1], EmptySymbol, newPlayBoard[*index1+1 : *index2], EmptySymbol, newPlayBoard[*index2+1:]}, "")
-		currentPlayer.captures += 1
-	} else if isForbidden(newPlayBoard, index, currentPlayer.symbol) {
+		currentPlayer.Captures += 1
+	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
 		return "", fmt.Errorf("position is forbidden")
 	}
 
 	return newPlayBoard, nil
 }
 
-func FiveInRow(i int, step int, condition conditionFn, playBoard string, symbol string) bool {
+func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol string) bool {
 	count := 1 //TO DO add if i % n + 5 >= n
 	j := i + step
 	for condition(j, i) && j < N*N {
@@ -235,7 +236,7 @@ func conditionHorizontal(j int, _ int) bool {
 	return j%N != 0 //till next row
 }
 
-func conditionVertical(j int, _ int) bool {
+func ConditionVertical(j int, _ int) bool {
 	return j >= 0 && j/N < N //till last + 1 raw
 }
 
@@ -243,21 +244,21 @@ func conditionRightDiagonal(j int, _ int) bool {
 	return j < N*N //till not out of index
 }
 
-func conditionLeftDiagonal(j int, i int) bool {
+func ConditionLeftDiagonal(j int, i int) bool {
 	return j%N < i%N //till column of left put stones less than start stone index
 }
 
-func conditionLeftUpperDiagonal(j int, i int) bool {
+func ConditionLeftUpperDiagonal(j int, i int) bool {
 	return j%N > i%N //till column of right(left upper) put stones more than start stone index
 }
 
 func checkFive(playBoard string, i int, symbol string) bool {
 
-	setRules := map[int]conditionFn{
+	setRules := map[int]ConditionFn{
 		1:     conditionHorizontal,
-		N:     conditionVertical,
+		N:     ConditionVertical,
 		N + 1: conditionRightDiagonal,
-		N - 1: conditionLeftDiagonal,
+		N - 1: ConditionLeftDiagonal,
 	}
 
 	for step, condition := range setRules {
@@ -272,10 +273,10 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	//TO DO check only from new stone
 }
 
-func IsOver(playBoard string, player1 *Player, player2 *Player) bool {
+func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
 	for _, player := range []*Player{player1, player2} {
-		if player != nil && player.captures >= numOfCaptureStoneToWin/numOfCaptureStone {
-			fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.symbol)
+		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
+			fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
 			return true
 		}
 	}
