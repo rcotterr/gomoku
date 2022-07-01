@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gomoku/pkg/playboard"
 	"math"
+	"time"
 )
 
 type void struct{}
@@ -52,19 +53,14 @@ func countInRow(node string, index int, step int, condition playboard.ConditionF
 		}
 	}
 
-	//for endIndex < playboard.N*playboard.N || !condition(endIndex, index) && string(node[startIndex]) == symbol {
-	//	endIndex += step
-	//}
-
 	count := ((endIndex - startIndex) / step) + 1
-
-	//check free
 
 	return count, empty == 1, empty == 2
 
 }
 
 func Heuristic(node string, index int) float64 {
+	defer playboard.TimeTrack(time.Now(), "Heuristic")
 	num := 0.0
 
 	//count по каждой стороне
@@ -116,6 +112,7 @@ func UpdateSetChildren(index int, playBoard string, set myset) {
 }
 
 func getChildren(node string, index int, currentPlayer playboard.Player, setChildrenIndexes myset) map[int]string {
+	defer playboard.TimeTrack(time.Now(), "getChildren")
 	var children = make(map[int]string)
 
 	if index != -1 {
@@ -135,7 +132,7 @@ func getChildren(node string, index int, currentPlayer playboard.Player, setChil
 }
 
 func getAllIndexChildren(playBoard string) myset {
-
+	defer playboard.TimeTrack(time.Now(), "getAllIndexChildren")
 	set := make(map[int]void)
 
 	for index, val := range playBoard {
@@ -149,6 +146,7 @@ func getAllIndexChildren(playBoard string) myset {
 }
 
 func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, setChildrenIndexes myset) (float64, int) {
+	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth))
 	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
 		return Heuristic(node, index), index //TO DO static evaluation of node
 	}

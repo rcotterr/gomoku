@@ -2,9 +2,18 @@ package playboard
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var File *os.File
+
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	fmt.Fprintf(File, "%s took %s\n", name, elapsed)
+}
 
 const N = 19
 const EmptySymbol = "."
@@ -282,6 +291,8 @@ func checkFive(playBoard string, i int, symbol string) bool {
 }
 
 func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
+	defer TimeTrack(time.Now(), "IsOver")
+
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
 			fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
