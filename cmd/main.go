@@ -23,6 +23,8 @@ func main() {
 //Possible optimizations from aromny-w:
 //make array of stone structure
 //bits operations
+//make map like in sapper
+//return enum from free halfFree
 
 //Bonuses
 //- players' names

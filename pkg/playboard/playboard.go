@@ -113,7 +113,15 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 	return false, nil, nil
 }
 
-func conditionLeftDiagonalCheckFreeThree(j int, i int) bool {
+func ConditionLeftDiagonalCheckFiveStones(j int, i int) bool {
+	columnDiff := j%N - i%N
+	numOfCheckFive := 5
+	return columnDiff >= 0 && columnDiff <= numOfCheckFive+1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFive+1)
+	// upper and new column diff less than/equal 5 or lower and new column diff more than/equal -5
+	//+1 is for empty
+}
+
+func ConditionLeftDiagonalCheckFreeThree(j int, i int) bool {
 	columnDiff := j%N - i%N
 	return columnDiff >= 0 && columnDiff <= numOfCheckFreeThree+1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFreeThree+1)
 	// upper and new column diff less than/equal 3 or lower and new column diff more than/equal -3
@@ -172,7 +180,7 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 		1:     ConditionHorizontalCapture,
 		N:     ConditionVertical,
 		N + 1: ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
-		N - 1: conditionLeftDiagonalCheckFreeThree,
+		N - 1: ConditionLeftDiagonalCheckFreeThree,
 	}
 	countFreeThree := 0
 
@@ -201,7 +209,7 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (string, error
 
 	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.Symbol)
 	if capture {
-		fmt.Println("Capture: ", capture, *index1, *index2)
+		//fmt.Println("Capture: ", capture, *index1, *index2)
 		if *index1 > *index2 {
 			index1, index2 = index2, index1
 		}

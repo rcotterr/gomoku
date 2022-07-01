@@ -54,7 +54,7 @@ func AIPlay() {
 	var newPlayBoard string
 	for !playboard.IsOver(playBoard, &machinePlayer, &humanPlayer) {
 		if machineTurn {
-			machineIndex := algo.MinMaxAlgo(playBoard, machinePlayer, humanPlayer)
+			machineIndex := algo.Algo(playBoard, machinePlayer, humanPlayer)
 			playBoard, err = playboard.PutStone(playBoard, machineIndex, &machinePlayer)
 			if err != nil {
 				fmt.Println("Invalid machine algo!!!!!", err)
