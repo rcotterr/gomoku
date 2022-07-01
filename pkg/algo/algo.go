@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gomoku/pkg/playboard"
 	"math"
+	"sync"
 	"time"
 )
 
@@ -11,6 +12,8 @@ type void struct{}
 type myset map[int]void
 
 var member void
+
+var m sync.Mutex
 
 var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
@@ -103,28 +106,34 @@ func Heuristic(node string, index int) float64 {
 }
 
 func UpdateSetChildren(index int, playBoard string, set myset) {
+
 	for step, condition := range setRulesChildren {
 		j := index + step
 		if condition(j, index) && j >= 0 && j < playboard.N*playboard.N && string(playBoard[j]) == playboard.EmptySymbol {
 			set[j] = member
+
 		}
 	}
+
 }
 
 func getChildren(node string, index int, currentPlayer playboard.Player, setChildrenIndexes myset) map[int]string {
 	defer playboard.TimeTrack(time.Now(), "getChildren")
 	var children = make(map[int]string)
 
+	m.Lock()
 	if index != -1 {
 		UpdateSetChildren(index, node, setChildrenIndexes)
 	}
-
 	for k := range setChildrenIndexes {
 		newPlayBoard, err := playboard.PutStone(node, k, &currentPlayer)
 		if err == nil {
+			//m.Lock()
 			children[k] = newPlayBoard
+			//m.Unlock()
 		}
 	}
+	m.Unlock()
 
 	//TO DO cache
 
@@ -145,6 +154,11 @@ func getAllIndexChildren(playBoard string) myset {
 	return set
 }
 
+type result struct {
+	eval       float64
+	childIndex int
+}
+
 func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, setChildrenIndexes myset) (float64, int) {
 	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth))
 	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
@@ -153,38 +167,77 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	if maximizingPlayer {
 		maxEval := math.Inf(-1)
 		maxIndex := 0
-		for childIndex, childPlayboard := range getChildren(node, index, machinePlayer, setChildrenIndexes) {
-			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setChildrenIndexes)
-			if eval > maxEval {
-				maxEval = eval
-				maxIndex = childIndex
+		children := getChildren(node, index, machinePlayer, setChildrenIndexes)
+
+		ch := make(chan result)
+		defer close(ch)
+
+		for childIndex, childPlayboard := range children {
+			go func(childPlayboard string, childIndex int) {
+				setNewChildIndexes := make(map[int]void)
+
+				for key := range children {
+					setNewChildIndexes[key] = member
+				}
+				if depth == 4 {
+					//fmt.Println("")
+				}
+				eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
+				ch <- result{eval, childIndex}
+			}(childPlayboard, childIndex)
+		}
+		for i := 0; i < len(children); i++ {
+			result_ := <-ch
+			if result_.eval > maxEval {
+				maxEval = result_.eval
+				maxIndex = result_.childIndex
 			}
-			if eval >= alpha {
-				alpha = eval
+			if result_.eval >= alpha {
+				alpha = result_.eval
 				if beta <= alpha {
-					break
+					return maxEval, maxIndex
 				}
 			}
 		}
+
 		return maxEval, maxIndex
 	} else {
 		minEval := math.Inf(1)
 		minIndex := 0
-		for childIndex, childPlayboard := range getChildren(node, index, humanPlayer, setChildrenIndexes) {
-			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setChildrenIndexes)
-			if eval < minEval { // TO DO make max func
-				minEval = eval
-				minIndex = childIndex
+
+		children := getChildren(node, index, machinePlayer, setChildrenIndexes)
+
+		ch := make(chan result)
+		defer close(ch)
+
+		for childIndex, childPlayboard := range children {
+			go func(childPlayboard string, childIndex int) {
+				setNewChildIndexes := make(map[int]void)
+
+				for key := range children {
+					setNewChildIndexes[key] = member
+				}
+
+				eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
+				ch <- result{eval, childIndex}
+			}(childPlayboard, childIndex)
+		}
+
+		for i := 0; i < len(children); i++ {
+			result_ := <-ch
+
+			if result_.eval < minEval { // TO DO make max func
+				minEval = result_.eval
+				minIndex = result_.childIndex
 			}
-			if eval <= beta {
-				beta = eval
+			if result_.eval <= beta {
+				beta = result_.eval
 				if beta <= alpha {
-					break
+					return minEval, minIndex
 				}
 			}
 		}
 		return minEval, minIndex
-
 	}
 }
 
