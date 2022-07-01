@@ -153,7 +153,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	if maximizingPlayer {
 		maxEval := math.Inf(-1)
 		maxIndex := 0
-		for childIndex, childPlayboard := range getChildren(node, index, machinePlayer, setChildrenIndexes) { //TO DO check setChildrenIndexes is changed after this function
+		for childIndex, childPlayboard := range getChildren(node, index, machinePlayer, setChildrenIndexes) {
 			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setChildrenIndexes)
 			if eval > maxEval {
 				maxEval = eval
