@@ -133,7 +133,7 @@ func getChildren(node string, index int, currentPlayer playboard.Player, setChil
 
 func getAllIndexChildren(playBoard string) myset {
 	defer playboard.TimeTrack(time.Now(), "getAllIndexChildren")
-	set := make(map[int]void)
+	set := make(myset)
 
 	for index, val := range playBoard {
 		value := string(val)
@@ -153,8 +153,15 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	if maximizingPlayer {
 		maxEval := math.Inf(-1)
 		maxIndex := 0
-		for childIndex, childPlayboard := range getChildren(node, index, machinePlayer, setChildrenIndexes) {
-			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setChildrenIndexes)
+		children := getChildren(node, index, machinePlayer, setChildrenIndexes)
+
+		for childIndex, childPlayboard := range children {
+			setNewChildIndexes := make(map[int]void)
+
+			for key := range children {
+				setNewChildIndexes[key] = member
+			}
+			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
 			if eval > maxEval {
 				maxEval = eval
 				maxIndex = childIndex
@@ -170,8 +177,15 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	} else {
 		minEval := math.Inf(1)
 		minIndex := 0
-		for childIndex, childPlayboard := range getChildren(node, index, humanPlayer, setChildrenIndexes) {
-			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setChildrenIndexes)
+		children := getChildren(node, index, machinePlayer, setChildrenIndexes)
+		for childIndex, childPlayboard := range children {
+			setNewChildIndexes := make(myset)
+
+			for key := range children {
+				setNewChildIndexes[key] = member
+			}
+
+			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
 			if eval < minEval { // TO DO make max func
 				minEval = eval
 				minIndex = childIndex
