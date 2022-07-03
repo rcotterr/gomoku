@@ -178,7 +178,11 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		depth_ := -1
 		children := getChildren(node, index, machinePlayer, childIndexesSet)
 
+		breakCount := 4
 		for childIndex, childPlayboard := range children {
+			if breakCount == 0 {
+				break
+			}
 			_, ok := transpositions[childPlayboard]
 			if ok {
 				t += 1
@@ -199,6 +203,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 			if beta <= alpha {
 				break
 			}
+			breakCount -= 1
 		}
 		return maxEval, maxIndex, allIndexesPath, depth_
 	} else {
@@ -207,7 +212,11 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		children := getChildren(node, index, humanPlayer, childIndexesSet)
 		depth_ := -1
 
+		breakCount := 4
 		for childIndex, childPlayboard := range children {
+			if breakCount == 0 {
+				break
+			}
 			_, ok := transpositions[childPlayboard]
 			if ok {
 				t += 1
@@ -229,7 +238,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 			if beta <= alpha {
 				break
 			}
-
+			breakCount -= 1
 		}
 		return minEval, minIndex, allIndexesPath, depth_
 
@@ -267,7 +276,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		playboard.AllTimesCopySet = &AllTimesCopySet
 	}
 
-	depth := 5 //TO DO make config
+	depth := 9 //TO DO make config
 
 	negInf := math.Inf(-1)
 	posInf := math.Inf(1)

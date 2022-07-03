@@ -261,7 +261,7 @@ func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol 
 		j += step
 	}
 	if count >= 5 {
-		fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
+		//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
 		return true
 	}
 	return false
@@ -313,7 +313,7 @@ func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO c
 
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
-			fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
+			//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
 			return true
 		}
 	}
@@ -328,7 +328,7 @@ func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO c
 	}
 
 	if containEmpty := strings.Contains(playBoard, EmptySymbol); !containEmpty {
-		fmt.Println("Game is over, no space left, both players win")
+		//fmt.Println("Game is over, no space left, both players win")
 		return true
 	}
 	return false
