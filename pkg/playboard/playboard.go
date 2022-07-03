@@ -27,7 +27,7 @@ func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Durati
 		*allTime += elapsed
 	}
 	_, _ = fmt.Fprintf(File, "%s took %s\n", name, elapsed)
-	if name == "alphaBeta depth {4}" {
+	if name == "alphaBeta depth {5}" {
 		_, _ = fmt.Fprintf(File, "All took RunTimesHeuristic:%d, %s;\n RunTimesIsOver:%d, %s\n RunTimesgetChildren:%d, %s\n, CopySet: %d, %s\n",
 			*RunTimesHeuristic, AllTimesHeuristic, *RunTimesIsOver, AllTimesIsOver, *RunTimesgetChildren, AllTimesgetChildren, *RunTimesCopySet, AllTimesCopySet)
 	}

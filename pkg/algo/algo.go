@@ -9,8 +9,10 @@ import (
 
 type void struct{}
 type myset map[int]void
+type mysetString map[string]void
 
 var member void
+var t = 0
 
 var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
@@ -156,7 +158,7 @@ func copySet(children map[int]string) myset {
 	return setNewChildIndexes
 }
 
-func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset) (float64, int) {
+func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString) (float64, int) {
 	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
 	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
 		return Heuristic(node, index), index //TO DO static evaluation of node
@@ -167,9 +169,15 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		children := getChildren(node, index, machinePlayer, childIndexesSet)
 
 		for childIndex, childPlayboard := range children {
+			_, ok := transpositions[childPlayboard]
+			if ok {
+				t += 1
+				continue
+			}
+			transpositions[childPlayboard] = member
 			setNewChildIndexes := copySet(children)
 
-			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
+			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setNewChildIndexes, transpositions)
 			if eval > maxEval {
 				maxEval = eval
 				maxIndex = childIndex
@@ -188,9 +196,16 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		children := getChildren(node, index, machinePlayer, childIndexesSet)
 
 		for childIndex, childPlayboard := range children {
+			_, ok := transpositions[childPlayboard]
+			if ok {
+				t += 1
+				continue
+			}
+			transpositions[childPlayboard] = member
+
 			setNewChildIndexes := copySet(children)
 
-			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
+			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setNewChildIndexes, transpositions)
 			if eval < minEval { // TO DO make max func
 				minEval = eval
 				minIndex = childIndex
@@ -244,9 +259,12 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 	posInf := math.Inf(1)
 	index := -1
 
+	t = 0
+	var transpositions = make(mysetString)
+
 	setChildren := getAllIndexChildren(playBoard)
 	if len(setChildren) != 0 {
-		_, index = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren)
+		_, index = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions)
 	} else {
 		index = 9*19 + 9
 		//TO DO random from 3-15/3-15
