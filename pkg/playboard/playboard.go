@@ -10,9 +10,27 @@ import (
 
 var File *os.File
 
-func TimeTrack(start time.Time, name string) {
+var RunTimesHeuristic *int
+var RunTimesIsOver *int
+var RunTimesgetChildren *int
+var RunTimesCopySet *int
+
+var AllTimesHeuristic *time.Duration
+var AllTimesIsOver *time.Duration
+var AllTimesgetChildren *time.Duration
+var AllTimesCopySet *time.Duration
+
+func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Duration) {
 	elapsed := time.Since(start)
-	fmt.Fprintf(File, "%s took %s\n", name, elapsed)
+	if runTimes != nil && allTime != nil {
+		*runTimes += 1
+		*allTime += elapsed
+	}
+	_, _ = fmt.Fprintf(File, "%s took %s\n", name, elapsed)
+	if name == "alphaBeta depth {4}" {
+		_, _ = fmt.Fprintf(File, "All took RunTimesHeuristic:%d, %s;\n RunTimesIsOver:%d, %s\n RunTimesgetChildren:%d, %s\n, CopySet: %d, %s\n",
+			*RunTimesHeuristic, AllTimesHeuristic, *RunTimesIsOver, AllTimesIsOver, *RunTimesgetChildren, AllTimesgetChildren, *RunTimesCopySet, AllTimesCopySet)
+	}
 }
 
 const N = 19
@@ -291,7 +309,7 @@ func checkFive(playBoard string, i int, symbol string) bool {
 }
 
 func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
-	defer TimeTrack(time.Now(), "IsOver")
+	defer TimeTrack(time.Now(), "IsOver", RunTimesIsOver, AllTimesIsOver)
 
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
@@ -300,16 +318,12 @@ func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO c
 		}
 	}
 
-	for i, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
+	for j, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
 		value := string(val)
-		if value == SymbolPlayer1 || value == SymbolPlayer2 {
-			if checkFive(playBoard, i, value) {
+		if value != EmptySymbol {
+			if checkFive(playBoard, j, value) {
 				return true
 			}
-			i += 1
-		}
-		if string(val) == EmptySymbol {
-			i += 1
 		}
 	}
 

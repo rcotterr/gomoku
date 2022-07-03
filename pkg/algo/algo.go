@@ -60,7 +60,7 @@ func countInRow(node string, index int, step int, condition playboard.ConditionF
 }
 
 func Heuristic(node string, index int) float64 {
-	defer playboard.TimeTrack(time.Now(), "Heuristic")
+	defer playboard.TimeTrack(time.Now(), "Heuristic", playboard.RunTimesHeuristic, playboard.AllTimesHeuristic)
 	num := 0.0
 
 	//count по каждой стороне
@@ -111,15 +111,15 @@ func UpdateSetChildren(index int, playBoard string, set myset) {
 	}
 }
 
-func getChildren(node string, index int, currentPlayer playboard.Player, setChildrenIndexes myset) map[int]string {
-	defer playboard.TimeTrack(time.Now(), "getChildren")
+func getChildren(node string, index int, currentPlayer playboard.Player, childIndexesSet myset) map[int]string {
+	defer playboard.TimeTrack(time.Now(), "getChildren", playboard.RunTimesgetChildren, playboard.AllTimesgetChildren)
 	var children = make(map[int]string)
 
 	if index != -1 {
-		UpdateSetChildren(index, node, setChildrenIndexes)
+		UpdateSetChildren(index, node, childIndexesSet)
 	}
 
-	for k := range setChildrenIndexes {
+	for k := range childIndexesSet {
 		newPlayBoard, err := playboard.PutStone(node, k, &currentPlayer)
 		if err == nil {
 			children[k] = newPlayBoard
@@ -132,7 +132,7 @@ func getChildren(node string, index int, currentPlayer playboard.Player, setChil
 }
 
 func getAllIndexChildren(playBoard string) myset {
-	defer playboard.TimeTrack(time.Now(), "getAllIndexChildren")
+	defer playboard.TimeTrack(time.Now(), "getAllIndexChildren", nil, nil)
 	set := make(myset)
 
 	for index, val := range playBoard {
@@ -145,22 +145,30 @@ func getAllIndexChildren(playBoard string) myset {
 	return set
 }
 
-func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, setChildrenIndexes myset) (float64, int) {
-	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth))
+func copySet(children map[int]string) myset {
+	defer playboard.TimeTrack(time.Now(), "copySet", playboard.RunTimesCopySet, playboard.AllTimesCopySet)
+	setNewChildIndexes := make(myset)
+
+	for key := range children {
+		setNewChildIndexes[key] = member
+	}
+
+	return setNewChildIndexes
+}
+
+func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset) (float64, int) {
+	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
 	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
 		return Heuristic(node, index), index //TO DO static evaluation of node
 	}
 	if maximizingPlayer {
 		maxEval := math.Inf(-1)
 		maxIndex := 0
-		children := getChildren(node, index, machinePlayer, setChildrenIndexes)
+		children := getChildren(node, index, machinePlayer, childIndexesSet)
 
 		for childIndex, childPlayboard := range children {
-			setNewChildIndexes := make(map[int]void)
+			setNewChildIndexes := copySet(children)
 
-			for key := range children {
-				setNewChildIndexes[key] = member
-			}
 			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
 			if eval > maxEval {
 				maxEval = eval
@@ -177,13 +185,10 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	} else {
 		minEval := math.Inf(1)
 		minIndex := 0
-		children := getChildren(node, index, machinePlayer, setChildrenIndexes)
-		for childIndex, childPlayboard := range children {
-			setNewChildIndexes := make(myset)
+		children := getChildren(node, index, machinePlayer, childIndexesSet)
 
-			for key := range children {
-				setNewChildIndexes[key] = member
-			}
+		for childIndex, childPlayboard := range children {
+			setNewChildIndexes := copySet(children)
 
 			eval, _ := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setNewChildIndexes)
 			if eval < minEval { // TO DO make max func
@@ -203,7 +208,37 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 }
 
 func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboard.Player) int {
-	depth := 4 //TO DO make config
+	if playboard.RunTimesHeuristic != nil {
+		*playboard.RunTimesHeuristic = 0
+		*playboard.RunTimesIsOver = 0
+		*playboard.RunTimesgetChildren = 0
+		*playboard.RunTimesCopySet = 0
+
+		*playboard.AllTimesHeuristic = 0
+		*playboard.AllTimesIsOver = 0
+		*playboard.AllTimesgetChildren = 0
+		*playboard.AllTimesCopySet = 0
+	} else {
+		RunTimesHeuristic := 0
+		playboard.RunTimesHeuristic = &RunTimesHeuristic
+		RunTimesIsOver := 0
+		playboard.RunTimesIsOver = &RunTimesIsOver
+		RunTimesgetChildren := 0
+		playboard.RunTimesgetChildren = &RunTimesgetChildren
+		RunTimesCopySet := 0
+		playboard.RunTimesCopySet = &RunTimesCopySet
+
+		var AllTimesHeuristic time.Duration = 0
+		playboard.AllTimesHeuristic = &AllTimesHeuristic
+		var AllTimesIsOver time.Duration = 0
+		playboard.AllTimesIsOver = &AllTimesIsOver
+		var AllTimesgetChildren time.Duration = 0
+		playboard.AllTimesgetChildren = &AllTimesgetChildren
+		var AllTimesCopySet time.Duration = 0
+		playboard.AllTimesCopySet = &AllTimesCopySet
+	}
+
+	depth := 5 //TO DO make config
 
 	negInf := math.Inf(-1)
 	posInf := math.Inf(1)

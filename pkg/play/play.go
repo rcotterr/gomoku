@@ -52,7 +52,7 @@ func AIPlay() {
 	machineTurn := true
 	var err error
 	var newPlayBoard string
-	file, _ := os.Create("file33")
+	file, _ := os.Create("file37")
 	playboard.File = file
 	for !playboard.IsOver(playBoard, &machinePlayer, &humanPlayer) {
 		if machineTurn {
