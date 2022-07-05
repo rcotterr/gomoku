@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gomoku/pkg/playboard"
 	"math"
+	"sort"
 	"time"
 )
 
@@ -159,6 +160,50 @@ func copySet(children map[int]string) myset {
 	return setNewChildIndexes
 }
 
+func getIndexes(children []Child) myset {
+	defer playboard.TimeTrack(time.Now(), "copySet", playboard.RunTimesCopySet, playboard.AllTimesCopySet)
+	setNewChildIndexes := make(myset)
+
+	for _, child := range children {
+		setNewChildIndexes[child.Index] = member
+	}
+
+	return setNewChildIndexes
+}
+
+type Child struct {
+	Index     int
+	Value     float64
+	PlayBoard string
+}
+
+const numChildren = 7
+
+func cutChildren(children map[int]string, transpositions mysetString) []Child {
+
+	var new_ []Child
+	for childIndex, childPlayboard := range children {
+		_, ok := transpositions[childPlayboard]
+		if ok {
+			t += 1
+			continue
+		}
+		transpositions[childPlayboard] = member
+		h := Heuristic(childPlayboard, childIndex)
+		new_ = append(new_, Child{childIndex, h, childPlayboard})
+
+	}
+
+	sort.Slice(new_, func(i, j int) bool {
+		return new_[i].Value > new_[j].Value
+	})
+	if len(new_) > numChildren {
+		new_ = new_[:numChildren]
+	}
+
+	return new_
+}
+
 func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString, allIndexesPath string) (float64, int, string, int) {
 	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
 
@@ -177,33 +222,34 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		maxIndex := 0
 		depth_ := -1
 		children := getChildren(node, index, machinePlayer, childIndexesSet)
-
-		breakCount := 4
-		for childIndex, childPlayboard := range children {
-			if breakCount == 0 {
-				break
-			}
-			_, ok := transpositions[childPlayboard]
-			if ok {
-				t += 1
-				continue
-			}
-			transpositions[childPlayboard] = member
+		childrenSlice := cutChildren(children, transpositions)
+		//breakCount := 4
+		for _, child := range childrenSlice {
+			//if breakCount == 0 {
+			//	break
+			//}
+			//_, ok := transpositions[child.PlayBoard]
+			//if ok {
+			//	t += 1
+			//	continue
+			//}
+			//transpositions[child.PlayBoard] = member
 			setNewChildIndexes := copySet(children)
+			//setNewChildIndexes := getIndexes(childrenSlice)
 
-			eval, _, tmpIndPath, tmpDepth := alphaBeta(childPlayboard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, childIndex, setNewChildIndexes, transpositions, allIndexesPath)
+			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
 
 			if eval > maxEval && tmpDepth >= depth_ {
 				maxEval = eval
 				depth_ = tmpDepth
-				maxIndex = childIndex
+				maxIndex = child.Index
 				allIndexesPath = tmpIndPath
 			}
 			alpha = math.Max(alpha, eval)
 			if beta <= alpha {
 				break
 			}
-			breakCount -= 1
+			//breakCount -= 1
 		}
 		return maxEval, maxIndex, allIndexesPath, depth_
 	} else {
@@ -211,26 +257,26 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		minIndex := 0
 		children := getChildren(node, index, humanPlayer, childIndexesSet)
 		depth_ := -1
-
-		breakCount := 4
-		for childIndex, childPlayboard := range children {
-			if breakCount == 0 {
-				break
-			}
-			_, ok := transpositions[childPlayboard]
-			if ok {
-				t += 1
-				continue
-			}
-			transpositions[childPlayboard] = member
+		childrenSlice := cutChildren(children, transpositions)
+		//breakCount := 4
+		for _, child := range childrenSlice {
+			//if breakCount == 0 {
+			//	break
+			//}
+			//_, ok := transpositions[childPlayboard]
+			//if ok {
+			//	t += 1
+			//	continue
+			//}
+			//transpositions[childPlayboard] = member
 
 			setNewChildIndexes := copySet(children)
 
-			eval, _, tmpIndPath, tmpDepth := alphaBeta(childPlayboard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, childIndex, setNewChildIndexes, transpositions, allIndexesPath)
+			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
 
 			if eval < minEval { //because both values are + inf eval <= minEval
 				minEval = eval
-				minIndex = childIndex
+				minIndex = child.Index
 				allIndexesPath = tmpIndPath
 				depth_ = tmpDepth
 			}
@@ -238,7 +284,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 			if beta <= alpha {
 				break
 			}
-			breakCount -= 1
+			//breakCount -= 1
 		}
 		return minEval, minIndex, allIndexesPath, depth_
 
@@ -276,7 +322,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		playboard.AllTimesCopySet = &AllTimesCopySet
 	}
 
-	depth := 9 //TO DO make config
+	depth := 10 //TO DO make config
 
 	negInf := math.Inf(-1)
 	posInf := math.Inf(1)
