@@ -5,6 +5,7 @@ import (
 	"gomoku/pkg/playboard"
 	"math"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -14,6 +15,8 @@ type mysetString map[string]void
 
 var member void
 var t = 0
+
+//const maxValueWin = 1000000000
 
 var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
@@ -62,12 +65,16 @@ func countInRow(node string, index int, step int, condition playboard.ConditionF
 
 }
 
-func Heuristic(node string, index int) float64 {
+func Heuristic(node string, index int, symbol string) float64 {
 	defer playboard.TimeTrack(time.Now(), "Heuristic", playboard.RunTimesHeuristic, playboard.AllTimesHeuristic)
 	num := 0.0
 
 	//count по каждой стороне
-	symbol := string(node[index])
+	//symbol := string(node[index])
+	//symbol := "M"
+	if symbol == "" {
+		symbol = string(node[index])
+	}
 
 	setRules := map[int]playboard.ConditionFn{
 		1:               playboard.ConditionHorizontalCapture,
@@ -189,7 +196,7 @@ func cutChildren(children map[int]string, transpositions mysetString) []Child {
 			continue
 		}
 		transpositions[childPlayboard] = member
-		h := Heuristic(childPlayboard, childIndex)
+		h := Heuristic(childPlayboard, childIndex, "")
 		new_ = append(new_, Child{childIndex, h, childPlayboard})
 
 	}
@@ -197,9 +204,9 @@ func cutChildren(children map[int]string, transpositions mysetString) []Child {
 	sort.Slice(new_, func(i, j int) bool {
 		return new_[i].Value > new_[j].Value
 	})
-	if len(new_) > numChildren {
-		new_ = new_[:numChildren]
-	}
+	//if len(new_) > numChildren {
+	//	new_ = new_[:numChildren]
+	//}
 
 	return new_
 }
@@ -207,15 +214,22 @@ func cutChildren(children map[int]string, transpositions mysetString) []Child {
 func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString, allIndexesPath string) (float64, int, string, int) {
 	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
 
-	//if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
-	if depth == 0 {
-		return Heuristic(node, index), index, node, depth //TO DO static evaluation of node
-	}
-	if playboard.IsOver(node, &machinePlayer, &humanPlayer) {
-		h := Heuristic(node, index)
-		i := depth * 1000.0
-		h = h + float64(i)
-		return h, index, node, depth
+	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
+		symbol := string(node[index])
+		//h1 := Heuristic(node, index, symbol) + float64(depth * 1000)
+		h1 := Heuristic(node, index, symbol)
+		if symbol == machinePlayer.Symbol {
+			symbol = humanPlayer.Symbol
+			node = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
+
+		} else if symbol == humanPlayer.Symbol {
+			symbol = machinePlayer.Symbol
+			node = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
+
+		}
+		//h2 := Heuristic(node, index, symbol) + float64(depth * 1000)
+		h2 := Heuristic(node, index, symbol)
+		return h1 - h2, index, node, depth
 	}
 	if maximizingPlayer {
 		maxEval := math.Inf(-1)
@@ -225,6 +239,9 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		childrenSlice := cutChildren(children, transpositions)
 		//breakCount := 4
 		for _, child := range childrenSlice {
+			//if child.Value >= maxValueWin {
+			//	return maxEval, maxIndex, allIndexesPath, depth_
+			//}
 			//if breakCount == 0 {
 			//	break
 			//}
@@ -273,7 +290,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 			setNewChildIndexes := copySet(children)
 
 			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
-
+			eval = -eval
 			if eval < minEval { //because both values are + inf eval <= minEval
 				minEval = eval
 				minIndex = child.Index
@@ -322,7 +339,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		playboard.AllTimesCopySet = &AllTimesCopySet
 	}
 
-	depth := 10 //TO DO make config
+	depth := 5 //TO DO make config
 
 	negInf := math.Inf(-1)
 	posInf := math.Inf(1)
@@ -339,6 +356,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		fmt.Println(val, depth)
 		playboard.PrintPlayBoard(allIndexesPath)
 	} else {
+		//index = 18*19 + 18
 		index = 9*19 + 9
 		//TO DO random from 3-15/3-15
 	}
