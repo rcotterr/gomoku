@@ -237,20 +237,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		depth_ := -1
 		children := getChildren(node, index, machinePlayer, childIndexesSet)
 		childrenSlice := cutChildren(children, transpositions)
-		//breakCount := 4
 		for _, child := range childrenSlice {
-			//if child.Value >= maxValueWin {
-			//	return maxEval, maxIndex, allIndexesPath, depth_
-			//}
-			//if breakCount == 0 {
-			//	break
-			//}
-			//_, ok := transpositions[child.PlayBoard]
-			//if ok {
-			//	t += 1
-			//	continue
-			//}
-			//transpositions[child.PlayBoard] = member
 			setNewChildIndexes := copySet(children)
 			//setNewChildIndexes := getIndexes(childrenSlice)
 
@@ -266,7 +253,6 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 			if beta <= alpha {
 				break
 			}
-			//breakCount -= 1
 		}
 		return maxEval, maxIndex, allIndexesPath, depth_
 	} else {
@@ -275,22 +261,12 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 		children := getChildren(node, index, humanPlayer, childIndexesSet)
 		depth_ := -1
 		childrenSlice := cutChildren(children, transpositions)
-		//breakCount := 4
 		for _, child := range childrenSlice {
-			//if breakCount == 0 {
-			//	break
-			//}
-			//_, ok := transpositions[childPlayboard]
-			//if ok {
-			//	t += 1
-			//	continue
-			//}
-			//transpositions[childPlayboard] = member
 
 			setNewChildIndexes := copySet(children)
 
 			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
-			eval = -eval
+			//eval = -eval
 			if eval < minEval { //because both values are + inf eval <= minEval
 				minEval = eval
 				minIndex = child.Index
@@ -301,7 +277,6 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 			if beta <= alpha {
 				break
 			}
-			//breakCount -= 1
 		}
 		return minEval, minIndex, allIndexesPath, depth_
 
