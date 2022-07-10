@@ -86,8 +86,8 @@ func Heuristic(node string, index int, symbol string) float64 {
 	for step, condition := range setRules {
 		count, halfFree, free := countInRow(node, index, step, condition, symbol)
 		if count == 5 { // TO DO and not capture
-			num = 1000000000
-			break
+			// playboard.PrintPlayBoard(node)
+			return math.Inf(1)
 		} else if count == 4 && free {
 			num += 10000000
 		} else if count == 4 && halfFree {
@@ -283,6 +283,58 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	}
 }
 
+func NegaScout(node string, depth int, alpha float64, beta float64, multiplier int, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString, allIndexesPath string) (float64, int) {
+	println("depth", depth)
+	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
+		var h1, h2 float64
+
+		if string(node[index]) == machinePlayer.Symbol {
+			h1 = Heuristic(node, index, machinePlayer.Symbol)
+			node = strings.Join([]string{node[:index], humanPlayer.Symbol, node[index+1:]}, "")
+			h2 = Heuristic(node, index, humanPlayer.Symbol)
+		} else {
+			h2 = Heuristic(node, index, humanPlayer.Symbol)
+			node = strings.Join([]string{node[:index], machinePlayer.Symbol, node[index+1:]}, "")
+			h1 = Heuristic(node, index, machinePlayer.Symbol)
+		}
+
+		if (h1 == math.Inf(1)) {
+			// println("hi");
+		}
+
+		return float64(multiplier) * (h1 - h2), index
+	}
+
+	maxEval := math.Inf(-1)
+	maxIndex := -1
+	var children map[int]string
+	if (multiplier == 1) {
+		children = getChildren(node, index, machinePlayer, childIndexesSet)
+	} else {
+		children = getChildren(node, index, humanPlayer, childIndexesSet)
+	}
+	childrenSlice := cutChildren(children, transpositions)
+
+	for _, child := range childrenSlice {
+		setNewChildIndexes := copySet(children)
+		eval, _ := NegaScout(child.PlayBoard, depth - 1, -alpha, -beta, -multiplier, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
+
+		eval = -eval;
+		if eval > maxEval {
+			maxEval = eval
+			maxIndex = child.Index
+		}
+
+		alpha = math.Max(alpha, eval)
+
+		if alpha >= beta {
+			break
+		}
+	}
+
+	return maxEval, maxIndex
+}
+
 func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboard.Player) int {
 	if playboard.RunTimesHeuristic != nil {
 		*playboard.RunTimesHeuristic = 0
@@ -314,12 +366,12 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		playboard.AllTimesCopySet = &AllTimesCopySet
 	}
 
-	depth := 5 //TO DO make config
+	depth := 10 //TO DO make config
 
 	negInf := math.Inf(-1)
 	posInf := math.Inf(1)
 	index := -1
-	val := 0.0
+	// val := 0.0
 
 	t = 0
 	var transpositions = make(mysetString)
@@ -327,8 +379,9 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 	setChildren := getAllIndexChildren(playBoard)
 	if len(setChildren) != 0 {
 		allIndexesPath := ""
-		val, index, allIndexesPath, depth = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
-		fmt.Println(val, depth)
+		// _, index, allIndexesPath, depth = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
+		_, index = NegaScout(playBoard, depth, negInf, posInf, 1, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
+		// fmt.Println(val, depth)
 		playboard.PrintPlayBoard(allIndexesPath)
 	} else {
 		//index = 18*19 + 18
@@ -336,7 +389,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		//TO DO random from 3-15/3-15
 	}
 
-	fmt.Println(index)
+	// fmt.Println(index)
 
 	return index
 }

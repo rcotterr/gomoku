@@ -61,21 +61,21 @@ type Pos struct {
 type ConditionFn func(int, int) bool
 
 func PrintPlayBoard(playBoard string) {
-	fmt.Println("current play board:")
+	println("current play board:")
 
-	fmt.Print("   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18")
+	print("   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18")
 	for i, val := range playBoard {
 		if i%N == 0 {
-			fmt.Println()
+			println()
 			if i/N > 9 {
-				fmt.Print(i/N, " ")
+				print(i/N, " ")
 			} else {
-				fmt.Print(i/N, "  ")
+				print(i/N, "  ")
 			}
 		}
-		fmt.Print(string(val), "  ")
+		print(string(val), "  ")
 	}
-	fmt.Println()
+	println()
 }
 
 func ParsePositions(text string) (*Pos, error) {
