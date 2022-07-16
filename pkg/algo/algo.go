@@ -22,11 +22,11 @@ var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
 	playboard.N:      playboard.ConditionVertical,
 	playboard.N + 1:  playboard.ConditionBackDiagonal,
-	playboard.N - 1:  playboard.ConditionLeftDiagonal,
+	playboard.N - 1:  playboard.ConditionForwardDiagonal,
 	-1:               playboard.ConditionHorizontalCapture,
 	-playboard.N:     playboard.ConditionVertical,
 	-playboard.N - 1: playboard.ConditionBackDiagonal,
-	-playboard.N + 1: playboard.ConditionLeftUpperDiagonal,
+	-playboard.N + 1: playboard.ConditionForwardDiagonal,
 }
 
 func countInRow(node string, index int, step int, condition playboard.ConditionFn, symbol string) (int, bool, bool) {
@@ -80,7 +80,7 @@ func Heuristic(node string, index int, symbol string) float64 {
 		1:               playboard.ConditionHorizontalCapture,
 		playboard.N:     playboard.ConditionVertical,
 		playboard.N + 1: playboard.ConditionBackDiagonal,
-		playboard.N - 1: playboard.ConditionLeftDiagonalCheckFiveStones,
+		playboard.N - 1: playboard.ConditionForwardDiagonal,
 	}
 
 	for step, condition := range setRules {

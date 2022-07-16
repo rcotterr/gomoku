@@ -113,6 +113,14 @@ func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
 	}
 }
 
+func ConditionForwardDiagonal(j int, i int) bool { // diagonal is /
+	if i > j {
+		return j%N >= i%N
+	} else {
+		return j%N <= i%N
+	}
+}
+
 func checkCapturedByCondition(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	j := index + nextFromCapturedStone*step
 
@@ -135,11 +143,11 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 		1:      ConditionHorizontalCapture,
 		N:      ConditionVertical,
 		N + 1:  ConditionBackDiagonal,
-		N - 1:  ConditionLeftDiagonal,
+		N - 1:  ConditionForwardDiagonal,
 		-1:     ConditionHorizontalCapture,
 		-N:     ConditionVertical,
 		-N - 1: ConditionBackDiagonal,
-		-N + 1: ConditionLeftUpperDiagonal,
+		-N + 1: ConditionForwardDiagonal,
 	}
 
 	for step, condition := range setRules {
@@ -149,21 +157,6 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 	}
 
 	return false, nil, nil
-}
-
-func ConditionLeftDiagonalCheckFiveStones(j int, i int) bool {
-	columnDiff := j%N - i%N
-	numOfCheckFive := 5
-	return columnDiff >= 0 && columnDiff <= numOfCheckFive+1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFive+1)
-	// upper and new column diff less than/equal 5 or lower and new column diff more than/equal -5
-	//+1 is for empty
-}
-
-func ConditionLeftDiagonalCheckFreeThree(j int, i int) bool {
-	columnDiff := j%N - i%N
-	return columnDiff >= 0 && columnDiff <= numOfCheckFreeThree+1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFreeThree+1)
-	// upper and new column diff less than/equal 3 or lower and new column diff more than/equal -3
-	//+1 is for empty
 }
 
 func isFreeThree(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) bool {
@@ -218,7 +211,7 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 		1:     ConditionHorizontalCapture,
 		N:     ConditionVertical,
 		N + 1: ConditionBackDiagonal,
-		N - 1: ConditionLeftDiagonalCheckFreeThree,
+		N - 1: ConditionForwardDiagonal,
 	}
 	countFreeThree := 0
 
@@ -234,7 +227,6 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-//func PutStone(playBoard string, pos *Pos, currentPlayer *Player) (string, error) {
 func PutStone(playBoard string, index int, currentPlayer *Player) (string, error) {
 
 	//index := pos.Y*N + pos.X
@@ -286,21 +278,13 @@ func ConditionVertical(j int, _ int) bool {
 	return j >= 0 && j/N < N //till last + 1 raw
 }
 
-func ConditionLeftDiagonal(j int, i int) bool {
-	return j%N < i%N //till column of left put stones less than start stone index
-}
-
-func ConditionLeftUpperDiagonal(j int, i int) bool {
-	return j%N > i%N //till column of right(left upper) put stones more than start stone index
-}
-
 func checkFive(playBoard string, i int, symbol string) bool {
 
 	setRules := map[int]ConditionFn{
 		1:     conditionHorizontal,
 		N:     ConditionVertical,
 		N + 1: ConditionBackDiagonal,
-		N - 1: ConditionLeftDiagonal,
+		N - 1: ConditionForwardDiagonal,
 	}
 
 	for step, condition := range setRules {
