@@ -101,8 +101,8 @@ func ParsePositions(text string) (*Pos, error) {
 	return &pos, nil
 }
 
-func ConditionHorizontalCapture(j int, i int) bool {
-	return j >= 0 && j/N == i/N //if the same string
+func ConditionHorizontal(j int, i int) bool {
+	return j/N == i/N //if the same string
 }
 
 func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
@@ -140,11 +140,11 @@ func checkCapturedByCondition(step int, condition ConditionFn, playBoard string,
 
 func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	setRules := map[int]ConditionFn{
-		1:      ConditionHorizontalCapture,
+		1:      ConditionHorizontal,
 		N:      ConditionVertical,
 		N + 1:  ConditionBackDiagonal,
 		N - 1:  ConditionForwardDiagonal,
-		-1:     ConditionHorizontalCapture,
+		-1:     ConditionHorizontal,
 		-N:     ConditionVertical,
 		-N - 1: ConditionBackDiagonal,
 		-N + 1: ConditionForwardDiagonal,
@@ -208,7 +208,7 @@ func isFreeThree(step int, condition ConditionFn, playBoard string, index int, c
 
 func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	setRules := map[int]ConditionFn{
-		1:     ConditionHorizontalCapture,
+		1:     ConditionHorizontal,
 		N:     ConditionVertical,
 		N + 1: ConditionBackDiagonal,
 		N - 1: ConditionForwardDiagonal,
@@ -255,7 +255,7 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (string, error
 func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol string) bool {
 	count := 1 //TO DO add if i % n + 5 >= n
 	j := i + step
-	for condition(j, i) && j < N*N {
+	for condition(j, i) && j >= 0 && j < N*N {
 		if string(playBoard[j]) == symbol {
 			count += 1
 		} else {
@@ -270,10 +270,6 @@ func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol 
 	return false
 }
 
-func conditionHorizontal(j int, _ int) bool {
-	return j%N != 0 //till next row
-}
-
 func ConditionVertical(j int, _ int) bool {
 	return j >= 0 && j/N < N //till last + 1 raw
 }
@@ -281,7 +277,7 @@ func ConditionVertical(j int, _ int) bool {
 func checkFive(playBoard string, i int, symbol string) bool {
 
 	setRules := map[int]ConditionFn{
-		1:     conditionHorizontal,
+		1:     ConditionHorizontal,
 		N:     ConditionVertical,
 		N + 1: ConditionBackDiagonal,
 		N - 1: ConditionForwardDiagonal,

@@ -19,11 +19,11 @@ var t = 0
 //const maxValueWin = 1000000000
 
 var setRulesChildren = map[int]playboard.ConditionFn{
-	1:                playboard.ConditionHorizontalCapture,
+	1:                playboard.ConditionHorizontal,
 	playboard.N:      playboard.ConditionVertical,
 	playboard.N + 1:  playboard.ConditionBackDiagonal,
 	playboard.N - 1:  playboard.ConditionForwardDiagonal,
-	-1:               playboard.ConditionHorizontalCapture,
+	-1:               playboard.ConditionHorizontal,
 	-playboard.N:     playboard.ConditionVertical,
 	-playboard.N - 1: playboard.ConditionBackDiagonal,
 	-playboard.N + 1: playboard.ConditionForwardDiagonal,
@@ -36,7 +36,7 @@ func countInRow(node string, index int, step int, condition playboard.ConditionF
 	hreny := node[index:]
 	hreny = string(hreny)
 	startIndex := index
-	for tmpIndex := index - step; tmpIndex > 0 && tmpIndex > index-(step*5); tmpIndex -= step {
+	for tmpIndex := index - step; tmpIndex >= 0 && tmpIndex > index-(step*5); tmpIndex -= step {
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			startIndex = tmpIndex
 		} else {
@@ -77,7 +77,7 @@ func Heuristic(node string, index int, symbol string) float64 {
 	}
 
 	setRules := map[int]playboard.ConditionFn{
-		1:               playboard.ConditionHorizontalCapture,
+		1:               playboard.ConditionHorizontal,
 		playboard.N:     playboard.ConditionVertical,
 		playboard.N + 1: playboard.ConditionBackDiagonal,
 		playboard.N - 1: playboard.ConditionForwardDiagonal,
