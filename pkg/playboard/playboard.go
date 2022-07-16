@@ -60,6 +60,30 @@ type Pos struct {
 
 type ConditionFn func(int, int) bool
 
+func ConditionHorizontal(j int, i int) bool {
+	return j/N == i/N //if the same string
+}
+
+func ConditionVertical(_ int, _ int) bool {
+	return true
+}
+
+func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
+	if i > j {
+		return j%N <= i%N
+	} else {
+		return j%N >= i%N
+	}
+}
+
+func ConditionForwardDiagonal(j int, i int) bool { // diagonal is /
+	if i > j {
+		return j%N >= i%N
+	} else {
+		return j%N <= i%N
+	}
+}
+
 func PrintPlayBoard(playBoard string) {
 	fmt.Println("current play board:")
 
@@ -99,30 +123,6 @@ func ParsePositions(text string) (*Pos, error) {
 		}
 	}
 	return &pos, nil
-}
-
-func ConditionHorizontal(j int, i int) bool {
-	return j/N == i/N //if the same string
-}
-
-func ConditionVertical(_ int, _ int) bool {
-	return true
-}
-
-func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
-	if i > j {
-		return j%N <= i%N
-	} else {
-		return j%N >= i%N
-	}
-}
-
-func ConditionForwardDiagonal(j int, i int) bool { // diagonal is /
-	if i > j {
-		return j%N >= i%N
-	} else {
-		return j%N <= i%N
-	}
 }
 
 func checkCapturedByCondition(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
