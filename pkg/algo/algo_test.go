@@ -104,6 +104,7 @@ func TestGetChildren(t *testing.T) {
 				_, found := children[val]
 				assert.Equal(t, found, true, fmt.Sprintf("val is %d", val))
 			}
+
 		})
 	}
 }
