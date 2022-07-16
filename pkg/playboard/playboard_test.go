@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIsOver(t *testing.T) {
+func TestGameOver(t *testing.T) {
 	testCases := []struct {
 		name           string
 		playboard      string
@@ -276,7 +276,7 @@ func TestIsOver(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			isOver := IsOver(tc.playboard, tc.player1, tc.player2)
+			isOver := GameOver(tc.playboard, tc.player1, tc.player2)
 
 			assert.Equal(t, tc.expectedIsOver, isOver)
 		})

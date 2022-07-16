@@ -32,7 +32,7 @@ func HumanPlay() {
 	playboard.PrintPlayBoard(playBoard)
 	currentPlayer := playboard.Player1
 	anotherPlayer := playboard.Player2
-	for !playboard.IsOver(playBoard, &currentPlayer, &anotherPlayer) {
+	for !playboard.GameOver(playBoard, &currentPlayer, &anotherPlayer) {
 		newPlayBoard, err := HumanTurn(reader, currentPlayer, playBoard)
 		if err != nil {
 			fmt.Println(err)
@@ -54,7 +54,7 @@ func AIPlay() {
 	var newPlayBoard string
 	file, _ := os.Create("file41")
 	playboard.File = file
-	for !playboard.IsOver(playBoard, &machinePlayer, &humanPlayer) {
+	for !playboard.GameOver(playBoard, &machinePlayer, &humanPlayer) {
 		if machineTurn {
 			machineIndex := algo.Algo(playBoard, machinePlayer, humanPlayer)
 			playBoard, err = playboard.PutStone(playBoard, machineIndex, &machinePlayer)

@@ -295,8 +295,8 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	//TO DO check only from new stone
 }
 
-func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
-	defer TimeTrack(time.Now(), "IsOver", RunTimesIsOver, AllTimesIsOver)
+func GameOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
+	defer TimeTrack(time.Now(), "GameOver", RunTimesIsOver, AllTimesIsOver)
 
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
