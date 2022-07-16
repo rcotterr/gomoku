@@ -105,15 +105,11 @@ func ConditionHorizontalCapture(j int, i int) bool {
 	return j >= 0 && j/N == i/N //if the same string
 }
 
-func ConditionRightDiagonalCapture(j int, _ int) bool { // diagonal is \
-	return j >= 0 && j < N*N //till not out of index
-}
-
 func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
 	if i > j {
-		return j%N < i%N
+		return j%N <= i%N
 	} else {
-		return j%N > i%N
+		return j%N >= i%N
 	}
 }
 
@@ -138,11 +134,11 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 	setRules := map[int]ConditionFn{
 		1:      ConditionHorizontalCapture,
 		N:      ConditionVertical,
-		N + 1:  ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		N + 1:  ConditionBackDiagonal,
 		N - 1:  ConditionLeftDiagonal,
 		-1:     ConditionHorizontalCapture,
 		-N:     ConditionVertical,
-		-N - 1: ConditionRightDiagonalCapture,
+		-N - 1: ConditionBackDiagonal,
 		-N + 1: ConditionLeftUpperDiagonal,
 	}
 
@@ -221,7 +217,7 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	setRules := map[int]ConditionFn{
 		1:     ConditionHorizontalCapture,
 		N:     ConditionVertical,
-		N + 1: ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		N + 1: ConditionBackDiagonal,
 		N - 1: ConditionLeftDiagonalCheckFreeThree,
 	}
 	countFreeThree := 0

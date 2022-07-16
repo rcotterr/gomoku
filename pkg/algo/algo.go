@@ -79,7 +79,7 @@ func Heuristic(node string, index int, symbol string) float64 {
 	setRules := map[int]playboard.ConditionFn{
 		1:               playboard.ConditionHorizontalCapture,
 		playboard.N:     playboard.ConditionVertical,
-		playboard.N + 1: playboard.ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+		playboard.N + 1: playboard.ConditionBackDiagonal,
 		playboard.N - 1: playboard.ConditionLeftDiagonalCheckFiveStones,
 	}
 
