@@ -44,6 +44,13 @@ const numOfCaptureStoneToWin = 10
 const nextFromCapturedStone = numOfCaptureStone + 1
 const numOfCheckFreeThree = 3
 
+type State struct {
+	board   string
+	stones	int
+	player1 Player
+	player2 Player
+}
+
 type Player struct {
 	Captures int
 	Symbol   string
@@ -61,21 +68,21 @@ type Pos struct {
 type ConditionFn func(int, int) bool
 
 func PrintPlayBoard(playBoard string) {
-	fmt.Println("current play board:")
+	println("current play board:")
 
-	fmt.Print("   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18")
+	print("   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18")
 	for i, val := range playBoard {
 		if i%N == 0 {
-			fmt.Println()
+			println()
 			if i/N > 9 {
-				fmt.Print(i/N, " ")
+				print(i/N, " ")
 			} else {
-				fmt.Print(i/N, "  ")
+				print(i/N, "  ")
 			}
 		}
-		fmt.Print(string(val), "  ")
+		print(string(val), "  ")
 	}
-	fmt.Println()
+	println()
 }
 
 func ParsePositions(text string) (*Pos, error) {
@@ -102,11 +109,11 @@ func ParsePositions(text string) (*Pos, error) {
 }
 
 func ConditionHorizontalCapture(j int, i int) bool {
-	return j >= 0 && j/N == i/N //if the same string
+	return j >= 0 && j / N == i / N // if the same string
 }
 
-func ConditionRightDiagonalCapture(j int, _ int) bool { // diagonal is \
-	return j >= 0 && j < N*N //till not out of index
+func ConditionRightDiagonalCapture(j int, i int) bool { // diagonal is \
+	return j >= 0 && j < N * N // till not out of index
 }
 
 func checkCapturedByCondition(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
@@ -114,14 +121,14 @@ func checkCapturedByCondition(step int, condition ConditionFn, playBoard string,
 
 	if condition(j, index) && j >= 0 && j < N*N && string(playBoard[j]) == currentPlayer {
 		index1 := index + step
-		index2 := index + step*2
+		index2 := index + step * 2
 		symbol1 := string(playBoard[index1])
 		symbol2 := string(playBoard[index2])
 
 		if symbol1 != currentPlayer && symbol1 != EmptySymbol && symbol2 != currentPlayer && symbol2 != EmptySymbol { //TO DO check another player
 			return true, &index1, &index2
 		}
-		//fmt.Println(index1, index2)
+		// fmt.Println(index1, index2)
 	}
 	return false, nil, nil
 }
@@ -148,16 +155,16 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 }
 
 func ConditionLeftDiagonalCheckFiveStones(j int, i int) bool {
-	columnDiff := j%N - i%N
+	columnDiff := j % N - i % N
 	numOfCheckFive := 5
-	return columnDiff >= 0 && columnDiff <= numOfCheckFive+1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFive+1)
+	return columnDiff >= 0 && columnDiff <= numOfCheckFive + 1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFive + 1)
 	// upper and new column diff less than/equal 5 or lower and new column diff more than/equal -5
 	//+1 is for empty
 }
 
 func ConditionLeftDiagonalCheckFreeThree(j int, i int) bool {
-	columnDiff := j%N - i%N
-	return columnDiff >= 0 && columnDiff <= numOfCheckFreeThree+1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFreeThree+1)
+	columnDiff := j % N - i % N
+	return columnDiff >= 0 && columnDiff <= numOfCheckFreeThree + 1 || columnDiff <= 0 && columnDiff >= -(numOfCheckFreeThree + 1)
 	// upper and new column diff less than/equal 3 or lower and new column diff more than/equal -3
 	//+1 is for empty
 }
@@ -256,10 +263,30 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (string, error
 	return newPlayBoard, nil
 }
 
+func ConditionLeftUpperDiagonal(j int, i int) bool {
+	return j % N > i % N // till column of right (left upper) put stones more than start stone index
+}
+
+func ConditionLeftDiagonal(j int, i int) bool {
+	return j % N < i % N // till column of left put stones less than start stone index
+}
+
+func conditionRightDiagonal(j int, _ int) bool {
+	return j < N * N // till not out of index
+}
+
+func ConditionVertical(j int, _ int) bool {
+	return j >= 0 && j / N < N // till last + 1 row
+}
+
+func conditionHorizontal(j int, _ int) bool {
+	return j % N != 0 // till next row
+}
+
 func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol string) bool {
 	count := 1 //TO DO add if i % n + 5 >= n
 	j := i + step
-	for condition(j, i) && j < N*N {
+	for condition(j, i) && j < N * N {
 		if string(playBoard[j]) == symbol {
 			count += 1
 		} else {
@@ -272,26 +299,6 @@ func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol 
 		return true
 	}
 	return false
-}
-
-func conditionHorizontal(j int, _ int) bool {
-	return j%N != 0 //till next row
-}
-
-func ConditionVertical(j int, _ int) bool {
-	return j >= 0 && j/N < N //till last + 1 raw
-}
-
-func conditionRightDiagonal(j int, _ int) bool {
-	return j < N*N //till not out of index
-}
-
-func ConditionLeftDiagonal(j int, i int) bool {
-	return j%N < i%N //till column of left put stones less than start stone index
-}
-
-func ConditionLeftUpperDiagonal(j int, i int) bool {
-	return j%N > i%N //till column of right(left upper) put stones more than start stone index
 }
 
 func checkFive(playBoard string, i int, symbol string) bool {
@@ -315,20 +322,20 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	//TO DO check only from new stone
 }
 
-func IsOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
-	defer TimeTrack(time.Now(), "IsOver", RunTimesIsOver, AllTimesIsOver)
+func GameOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
+	// defer TimeTrack(time.Now(), "IsOver", RunTimesIsOver, AllTimesIsOver)
 
 	for _, player := range []*Player{player1, player2} {
-		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
-			//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
+		if player != nil && player.Captures >= numOfCaptureStoneToWin / numOfCaptureStone {
+			//println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
 			return true
 		}
 	}
 
-	for j, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
+	for i, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
 		value := string(val)
 		if value != EmptySymbol {
-			if checkFive(playBoard, j, value) {
+			if checkFive(playBoard, i, value) {
 				return true
 			}
 		}

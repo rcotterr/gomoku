@@ -1,7 +1,6 @@
 package algo
 
 import (
-	"fmt"
 	"gomoku/pkg/playboard"
 	"math"
 	"sort"
@@ -10,13 +9,11 @@ import (
 )
 
 type void struct{}
-type myset map[int]void
-type mysetString map[string]void
+type intSet map[int]void
+type stringSet map[string]void
 
 var member void
 var t = 0
-
-//const maxValueWin = 1000000000
 
 var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
@@ -86,8 +83,8 @@ func Heuristic(node string, index int, symbol string) float64 {
 	for step, condition := range setRules {
 		count, halfFree, free := countInRow(node, index, step, condition, symbol)
 		if count == 5 { // TO DO and not capture
-			num = 1000000000
-			break
+			// playboard.PrintPlayBoard(node)
+			return math.Inf(1)
 		} else if count == 4 && free {
 			num += 10000000
 		} else if count == 4 && halfFree {
@@ -113,16 +110,7 @@ func Heuristic(node string, index int, symbol string) float64 {
 	return num
 }
 
-func UpdateSetChildren(index int, playBoard string, set myset) {
-	for step, condition := range setRulesChildren {
-		j := index + step
-		if condition(j, index) && j >= 0 && j < playboard.N*playboard.N && string(playBoard[j]) == playboard.EmptySymbol {
-			set[j] = member
-		}
-	}
-}
-
-func getChildren(node string, index int, currentPlayer playboard.Player, childIndexesSet myset) map[int]string {
+func getChildren(node string, index int, currentPlayer playboard.Player, childIndexesSet intSet) map[int]string {
 	defer playboard.TimeTrack(time.Now(), "getChildren", playboard.RunTimesgetChildren, playboard.AllTimesgetChildren)
 	var children = make(map[int]string)
 
@@ -142,23 +130,11 @@ func getChildren(node string, index int, currentPlayer playboard.Player, childIn
 	return children
 }
 
-func getAllIndexChildren(playBoard string) myset {
-	defer playboard.TimeTrack(time.Now(), "getAllIndexChildren", nil, nil)
-	set := make(myset)
 
-	for index, val := range playBoard {
-		value := string(val)
-		if value != playboard.EmptySymbol {
-			UpdateSetChildren(index, playBoard, set)
-		}
-	}
 
-	return set
-}
-
-func copySet(children map[int]string) myset {
+func copySet(children map[int]string) intSet {
 	defer playboard.TimeTrack(time.Now(), "copySet", playboard.RunTimesCopySet, playboard.AllTimesCopySet)
-	setNewChildIndexes := make(myset)
+	setNewChildIndexes := make(intSet)
 
 	for key := range children {
 		setNewChildIndexes[key] = member
@@ -167,9 +143,9 @@ func copySet(children map[int]string) myset {
 	return setNewChildIndexes
 }
 
-func getIndexes(children []Child) myset {
+func getIndexes(children []Child) intSet {
 	defer playboard.TimeTrack(time.Now(), "copySet", playboard.RunTimesCopySet, playboard.AllTimesCopySet)
-	setNewChildIndexes := make(myset)
+	setNewChildIndexes := make(intSet)
 
 	for _, child := range children {
 		setNewChildIndexes[child.Index] = member
@@ -186,7 +162,7 @@ type Child struct {
 
 const numChildren = 7
 
-func cutChildren(children map[int]string, transpositions mysetString) []Child {
+func cutChildren(children map[int]string, transpositions stringSet) []Child {
 
 	var new_ []Child
 	for childIndex, childPlayboard := range children {
@@ -211,79 +187,80 @@ func cutChildren(children map[int]string, transpositions mysetString) []Child {
 	return new_
 }
 
-func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString, allIndexesPath string) (float64, int, string, int) {
-	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
+func NegaScout(node string, depth int, alpha float64, beta float64, multiplier int, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet intSet, transpositions stringSet) (float64, int) {
+	// println("depth", depth)
+	if depth == 0 || playboard.GameOver(node, &machinePlayer, &humanPlayer) {
+		var h1, h2 float64
 
-	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
-		symbol := string(node[index])
-		//h1 := Heuristic(node, index, symbol) + float64(depth * 1000)
-		h1 := Heuristic(node, index, symbol)
-		if symbol == machinePlayer.Symbol {
-			symbol = humanPlayer.Symbol
-			node = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
-
-		} else if symbol == humanPlayer.Symbol {
-			symbol = machinePlayer.Symbol
-			node = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
-
+		if string(node[index]) == machinePlayer.Symbol {
+			h1 = Heuristic(node, index, machinePlayer.Symbol)
+			node = strings.Join([]string{node[:index], humanPlayer.Symbol, node[index + 1:]}, "")
+			h2 = Heuristic(node, index, humanPlayer.Symbol)
+		} else {
+			h2 = Heuristic(node, index, humanPlayer.Symbol)
+			node = strings.Join([]string{node[:index], machinePlayer.Symbol, node[index + 1:]}, "")
+			h1 = Heuristic(node, index, machinePlayer.Symbol)
 		}
-		//h2 := Heuristic(node, index, symbol) + float64(depth * 1000)
-		h2 := Heuristic(node, index, symbol)
-		return h1 - h2, index, node, depth
+
+		return float64(multiplier) * (h1 - h2), index
 	}
-	if maximizingPlayer {
-		maxEval := math.Inf(-1)
-		maxIndex := 0
-		depth_ := -1
-		children := getChildren(node, index, machinePlayer, childIndexesSet)
-		childrenSlice := cutChildren(children, transpositions)
-		for _, child := range childrenSlice {
-			setNewChildIndexes := copySet(children)
-			//setNewChildIndexes := getIndexes(childrenSlice)
 
-			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
-
-			if eval > maxEval && tmpDepth >= depth_ {
-				maxEval = eval
-				depth_ = tmpDepth
-				maxIndex = child.Index
-				allIndexesPath = tmpIndPath
-			}
-			alpha = math.Max(alpha, eval)
-			if beta <= alpha {
-				break
-			}
-		}
-		return maxEval, maxIndex, allIndexesPath, depth_
+	maxEval := math.Inf(-1)
+	maxIndex := -1
+	var children map[int]string
+	if (multiplier == 1) {
+		children = getChildren(node, index, machinePlayer, childIndexesSet)
 	} else {
-		minEval := math.Inf(1)
-		minIndex := 0
-		children := getChildren(node, index, humanPlayer, childIndexesSet)
-		depth_ := -1
-		childrenSlice := cutChildren(children, transpositions)
-		for _, child := range childrenSlice {
+		children = getChildren(node, index, humanPlayer, childIndexesSet)
+	}
+	childrenSlice := cutChildren(children, transpositions)
 
-			setNewChildIndexes := copySet(children)
+	for _, child := range childrenSlice {
+		setNewChildIndexes := copySet(children)
+		eval, _ := NegaScout(child.PlayBoard, depth - 1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions)
 
-			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
-			//eval = -eval
-			if eval < minEval { //because both values are + inf eval <= minEval
-				minEval = eval
-				minIndex = child.Index
-				allIndexesPath = tmpIndPath
-				depth_ = tmpDepth
-			}
-			beta = math.Min(beta, eval)
-			if beta <= alpha {
-				break
+		eval = -eval;
+		if eval > maxEval {
+			maxEval = eval
+			maxIndex = child.Index
+		}
+
+		alpha = math.Max(alpha, eval)
+
+		if alpha >= beta {
+			break
+		}
+	}
+
+	return maxEval, maxIndex
+}
+
+func UpdateSetChildren(index int, board string, set intSet) {
+	for step, condition := range setRulesChildren {
+		j := index + step
+
+		if j >= 0 && j < playboard.N * playboard.N {
+			if string(board[j]) == playboard.EmptySymbol && condition(j, index) {
+				set[j] = member
 			}
 		}
-		return minEval, minIndex, allIndexesPath, depth_
-
 	}
 }
 
-func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboard.Player) int {
+func getAllIndexChildren(board string) intSet {
+	set := make(intSet)
+
+	for index, val := range board {
+		value := string(val)
+		if value != playboard.EmptySymbol {
+			UpdateSetChildren(index, board, set)
+		}
+	}
+
+	return set
+}
+
+func GetMachineIndex(board string, machinePlayer playboard.Player, humanPlayer playboard.Player) int {
 	if playboard.RunTimesHeuristic != nil {
 		*playboard.RunTimesHeuristic = 0
 		*playboard.RunTimesIsOver = 0
@@ -314,29 +291,22 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		playboard.AllTimesCopySet = &AllTimesCopySet
 	}
 
-	depth := 5 //TO DO make config
-
-	negInf := math.Inf(-1)
-	posInf := math.Inf(1)
+	depth := 5
 	index := -1
-	val := 0.0
 
-	t = 0
-	var transpositions = make(mysetString)
+	var transpositions = make(stringSet)
 
-	setChildren := getAllIndexChildren(playBoard)
-	if len(setChildren) != 0 {
-		allIndexesPath := ""
-		val, index, allIndexesPath, depth = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
-		fmt.Println(val, depth)
-		playboard.PrintPlayBoard(allIndexesPath)
+	moves := getAllIndexChildren(board)
+	println(moves)
+	if len(moves) != 0 {
+		_, index = NegaScout(board, depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, index, moves, transpositions)
 	} else {
-		//index = 18*19 + 18
-		index = 9*19 + 9
-		//TO DO random from 3-15/3-15
+		index = 9 * 19 + 9
 	}
 
-	fmt.Println(index)
+	if (index == -1) {
+		println("hm");
+	}
 
 	return index
 }
