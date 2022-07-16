@@ -206,3 +206,52 @@ func TestGetAllIndexChildren(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateSetChildren(t *testing.T) {
+	testCases := []struct {
+		name             string
+		playBoard        string
+		index            int
+		currentPlayer    playboard.Player
+		expectedChildren []int
+	}{
+		{
+			name: "near border",
+			playBoard: "0.................." +
+				"..................." +
+				"0M................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"0.................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:            114,
+			currentPlayer:    playboard.Player{0, playboard.SymbolPlayerMachine},
+			expectedChildren: []int{1, 19, 20, 21, 40, 57, 58, 59, 95, 96, 115, 133, 134},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.playBoard, func(t *testing.T) {
+
+			setChildren := getAllIndexChildren(tc.playBoard)
+			UpdateSetChildren(tc.index, tc.playBoard, setChildren)
+
+			assert.Equal(t, len(tc.expectedChildren), len(setChildren))
+			for _, val := range tc.expectedChildren {
+				_, found := setChildren[val]
+				assert.Equal(t, found, true, fmt.Sprintf("val is %d", val))
+			}
+		})
+	}
+}

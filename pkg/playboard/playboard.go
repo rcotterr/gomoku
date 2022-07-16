@@ -109,6 +109,14 @@ func ConditionRightDiagonalCapture(j int, _ int) bool { // diagonal is \
 	return j >= 0 && j < N*N //till not out of index
 }
 
+func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
+	if i > j {
+		return j%N < i%N
+	} else {
+		return j%N > i%N
+	}
+}
+
 func checkCapturedByCondition(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) (bool, *int, *int) {
 	j := index + nextFromCapturedStone*step
 

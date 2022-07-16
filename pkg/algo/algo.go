@@ -21,11 +21,11 @@ var t = 0
 var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
 	playboard.N:      playboard.ConditionVertical,
-	playboard.N + 1:  playboard.ConditionRightDiagonalCapture, //TO DO delete duplicate conditionRightDiagonal
+	playboard.N + 1:  playboard.ConditionBackDiagonal, //TO DO delete duplicate conditionRightDiagonal
 	playboard.N - 1:  playboard.ConditionLeftDiagonal,
 	-1:               playboard.ConditionHorizontalCapture,
 	-playboard.N:     playboard.ConditionVertical,
-	-playboard.N - 1: playboard.ConditionRightDiagonalCapture,
+	-playboard.N - 1: playboard.ConditionBackDiagonal,
 	-playboard.N + 1: playboard.ConditionLeftUpperDiagonal,
 }
 
@@ -117,7 +117,7 @@ func Heuristic(node string, index int, symbol string) float64 {
 func UpdateSetChildren(index int, playBoard string, set myset) {
 	for step, condition := range setRulesChildren {
 		j := index + step
-		if condition(j, index) && j >= 0 && j < playboard.N*playboard.N && string(playBoard[j]) == playboard.EmptySymbol {
+		if j >= 0 && j < playboard.N*playboard.N && condition(j, index) && string(playBoard[j]) == playboard.EmptySymbol {
 			set[j] = member
 		}
 	}
