@@ -286,10 +286,6 @@ func ConditionVertical(j int, _ int) bool {
 	return j >= 0 && j/N < N //till last + 1 raw
 }
 
-func conditionRightDiagonal(j int, _ int) bool {
-	return j < N*N //till not out of index
-}
-
 func ConditionLeftDiagonal(j int, i int) bool {
 	return j%N < i%N //till column of left put stones less than start stone index
 }
@@ -303,7 +299,7 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	setRules := map[int]ConditionFn{
 		1:     conditionHorizontal,
 		N:     ConditionVertical,
-		N + 1: conditionRightDiagonal,
+		N + 1: ConditionBackDiagonal,
 		N - 1: ConditionLeftDiagonal,
 	}
 

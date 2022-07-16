@@ -21,7 +21,7 @@ var t = 0
 var setRulesChildren = map[int]playboard.ConditionFn{
 	1:                playboard.ConditionHorizontalCapture,
 	playboard.N:      playboard.ConditionVertical,
-	playboard.N + 1:  playboard.ConditionBackDiagonal, //TO DO delete duplicate conditionRightDiagonal
+	playboard.N + 1:  playboard.ConditionBackDiagonal,
 	playboard.N - 1:  playboard.ConditionLeftDiagonal,
 	-1:               playboard.ConditionHorizontalCapture,
 	-playboard.N:     playboard.ConditionVertical,
