@@ -732,8 +732,7 @@ func TestIsForbidden(t *testing.T) {
 		},
 		{
 			name: "is forbidden right-left diagonals",
-			playboard: //
-			"..................." +
+			playboard: "..................." +
 				".......1..........." +
 				"......1............" +
 				".....1.1..........." +
