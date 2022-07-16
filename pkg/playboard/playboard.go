@@ -105,6 +105,10 @@ func ConditionHorizontal(j int, i int) bool {
 	return j/N == i/N //if the same string
 }
 
+func ConditionVertical(_ int, _ int) bool {
+	return true
+}
+
 func ConditionBackDiagonal(j int, i int) bool { // diagonal is \
 	if i > j {
 		return j%N <= i%N
@@ -268,10 +272,6 @@ func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol 
 		return true
 	}
 	return false
-}
-
-func ConditionVertical(j int, _ int) bool {
-	return j >= 0 && j/N < N //till last + 1 raw
 }
 
 func checkFive(playBoard string, i int, symbol string) bool {
