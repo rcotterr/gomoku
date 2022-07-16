@@ -2,15 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"gomoku/pkg/play"
 )
 
 func main() {
 	Human := flag.Bool("human", false, "Play against another human player")
 	flag.Parse()
-
-	fmt.Println("it's gomoku, let's play")
 
 	if *Human {
 		play.HumanPlay()
