@@ -114,6 +114,9 @@ func Heuristic(node string, index int, symbol string) float64 {
 }
 
 func UpdateSetChildren(index int, playBoard string, set myset) {
+	if index == 114 {
+		println()
+	}
 	for step, condition := range setRulesChildren {
 		j := index + step
 		if condition(j, index) && j >= 0 && j < playboard.N*playboard.N && string(playBoard[j]) == playboard.EmptySymbol {
@@ -211,41 +214,46 @@ func cutChildren(children map[int]string, transpositions mysetString) []Child {
 	return new_
 }
 
-func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString, allIndexesPath string) (float64, int, string, int) {
+func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet myset, transpositions mysetString) (float64, int, string) {
 	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
-
+	//_, _ = fmt.Fprintf(playboard.DebugFile, "depth %d\n", depth)
+	//playboard.PrintPlayBoardFile(node)
 	if depth == 0 || playboard.IsOver(node, &machinePlayer, &humanPlayer) {
 		symbol := string(node[index])
 		//h1 := Heuristic(node, index, symbol) + float64(depth * 1000)
 		h1 := Heuristic(node, index, symbol)
+		var tmpNode string = ""
 		if symbol == machinePlayer.Symbol {
 			symbol = humanPlayer.Symbol
-			node = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
+			tmpNode = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
 
 		} else if symbol == humanPlayer.Symbol {
 			symbol = machinePlayer.Symbol
-			node = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
-
+			tmpNode = strings.Join([]string{node[:index], symbol, node[index+1:]}, "")
 		}
-		//h2 := Heuristic(node, index, symbol) + float64(depth * 1000)
-		h2 := Heuristic(node, index, symbol)
-		return h1 - h2, index, node, depth
+		//h2 := Heuristic(tmpNode, index, symbol) + float64(depth * 1000)
+		h2 := Heuristic(tmpNode, index, symbol)
+		return (h1 - h2) + float64(depth*1000), index, node
+		//return (h1) + float64(depth * 10000), index, node
 	}
+	var allIndexesPath string
 	if maximizingPlayer {
 		maxEval := math.Inf(-1)
 		maxIndex := 0
-		depth_ := -1
 		children := getChildren(node, index, machinePlayer, childIndexesSet)
 		childrenSlice := cutChildren(children, transpositions)
 		for _, child := range childrenSlice {
 			setNewChildIndexes := copySet(children)
 			//setNewChildIndexes := getIndexes(childrenSlice)
 
-			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
-
-			if eval > maxEval && tmpDepth >= depth_ {
+			eval, _, tmpIndPath := alphaBeta(child.PlayBoard, depth-1, alpha, beta, false, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions)
+			if depth == 3 {
+				fmt.Print()
+			} else if depth == 5 {
+				fmt.Print()
+			}
+			if eval > maxEval {
 				maxEval = eval
-				depth_ = tmpDepth
 				maxIndex = child.Index
 				allIndexesPath = tmpIndPath
 			}
@@ -254,31 +262,43 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 				break
 			}
 		}
-		return maxEval, maxIndex, allIndexesPath, depth_
+		if depth == 3 {
+			fmt.Print()
+		} else if depth == 5 {
+			fmt.Print()
+		}
+		//_, _ = fmt.Fprintf(playboard.DebugFile, " final return depth %d maxEval %d maxIndex %d, %d %d", depth, int(maxEval), maxIndex, maxIndex%playboard.N, maxIndex/playboard.N)
+		//playboard.PrintPlayBoardFile(allIndexesPath)
+		return maxEval, maxIndex, allIndexesPath
 	} else {
 		minEval := math.Inf(1)
 		minIndex := 0
 		children := getChildren(node, index, humanPlayer, childIndexesSet)
-		depth_ := -1
 		childrenSlice := cutChildren(children, transpositions)
 		for _, child := range childrenSlice {
 
 			setNewChildIndexes := copySet(children)
 
-			eval, _, tmpIndPath, tmpDepth := alphaBeta(child.PlayBoard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
+			eval, _, tmpIndPath := alphaBeta(child.PlayBoard, depth-1, alpha, beta, true, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions)
 			//eval = -eval
 			if eval < minEval { //because both values are + inf eval <= minEval
 				minEval = eval
 				minIndex = child.Index
 				allIndexesPath = tmpIndPath
-				depth_ = tmpDepth
 			}
 			beta = math.Min(beta, eval)
 			if beta <= alpha {
 				break
 			}
 		}
-		return minEval, minIndex, allIndexesPath, depth_
+		if depth == 2 {
+			fmt.Print()
+		} else if depth == 4 {
+			fmt.Print()
+		}
+		//_, _ = fmt.Fprintf(playboard.DebugFile, " final return depth %d minEval %d minIndex %d %d %d", depth, minEval, minIndex, minIndex%playboard.N, minIndex/playboard.N)
+		//playboard.PrintPlayBoardFile(allIndexesPath)
+		return minEval, minIndex, allIndexesPath
 
 	}
 }
@@ -327,8 +347,8 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 	setChildren := getAllIndexChildren(playBoard)
 	if len(setChildren) != 0 {
 		allIndexesPath := ""
-		val, index, allIndexesPath, depth = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
-		fmt.Println(val, depth)
+		val, index, allIndexesPath = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions)
+		fmt.Println(val)
 		playboard.PrintPlayBoard(allIndexesPath)
 	} else {
 		//index = 18*19 + 18

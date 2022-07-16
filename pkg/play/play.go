@@ -53,7 +53,9 @@ func AIPlay() {
 	var err error
 	var newPlayBoard string
 	file, _ := os.Create("file41")
+	debugFile, _ := os.Create("debugfile42")
 	playboard.File = file
+	playboard.DebugFile = debugFile
 	for !playboard.IsOver(playBoard, &machinePlayer, &humanPlayer) {
 		if machineTurn {
 			machineIndex := algo.Algo(playBoard, machinePlayer, humanPlayer)

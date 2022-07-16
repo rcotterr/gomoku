@@ -9,6 +9,7 @@ import (
 )
 
 var File *os.File
+var DebugFile *os.File
 
 var RunTimesHeuristic *int
 var RunTimesIsOver *int
@@ -59,6 +60,24 @@ type Pos struct {
 }
 
 type ConditionFn func(int, int) bool
+
+func PrintPlayBoardFile(playBoard string) {
+	fmt.Fprintf(DebugFile, "current play board:\n")
+
+	fmt.Fprintf(DebugFile, "   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18")
+	for i, val := range playBoard {
+		if i%N == 0 {
+			fmt.Fprintf(DebugFile, "\n")
+			if i/N > 9 {
+				fmt.Fprintf(DebugFile, "%d ", i/N)
+			} else {
+				fmt.Fprintf(DebugFile, "%d  ", i/N)
+			}
+		}
+		fmt.Fprintf(DebugFile, "%s  ", string(val))
+	}
+	fmt.Fprintf(DebugFile, "\n")
+}
 
 func PrintPlayBoard(playBoard string) {
 	fmt.Println("current play board:")
