@@ -12,7 +12,7 @@ func TestGetChildren(t *testing.T) {
 		name               string
 		playboard          string
 		index              int
-		setChildrenIndexes myset
+		setChildrenIndexes intSet
 		currentPlayer      playboard.Player
 		expectedChildren   []int
 	}{
@@ -38,7 +38,7 @@ func TestGetChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:              23,
-			setChildrenIndexes: myset{},
+			setChildrenIndexes: intSet{},
 			currentPlayer:      playboard.Player{0, playboard.SymbolPlayerMachine},
 			expectedChildren:   []int{24, 43, 42, 41, 22, 3, 4, 5},
 		},
@@ -64,7 +64,7 @@ func TestGetChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:              23,
-			setChildrenIndexes: myset{4: member, 5: member, 6: member, 23: member, 25: member, 22: member, 40: member, 42: member, 59: member, 60: member, 61: member},
+			setChildrenIndexes: intSet{4: member, 5: member, 6: member, 23: member, 25: member, 22: member, 40: member, 42: member, 59: member, 60: member, 61: member},
 			currentPlayer:      playboard.Player{0, playboard.SymbolPlayerMachine},
 			expectedChildren:   []int{43, 42, 22, 3, 4, 5, 6, 25, 40, 59, 60, 61},
 		},
