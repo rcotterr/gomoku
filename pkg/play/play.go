@@ -3,7 +3,6 @@ package play
 import (
 	"bufio"
 	"fmt"
-	"gomoku/pkg/algo"
 	"gomoku/pkg/playboard"
 	"os"
 	"strings"
@@ -62,7 +61,7 @@ func AIPlay() {
 	playboard.File = file
 	for !playboard.GameOver(playBoard, &machinePlayer, &humanPlayer, index) {
 		if machineTurn {
-			index = algo.Algo(playBoard, machinePlayer, humanPlayer)
+			index = playboard.Algo(playBoard, machinePlayer, humanPlayer)
 			playBoard, err = playboard.PutStone(playBoard, index, &machinePlayer)
 			if err != nil {
 				fmt.Println("Invalid machine algo!!!!!", err)

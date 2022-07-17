@@ -1,8 +1,7 @@
-package algo
+package playboard
 
 import (
 	"fmt"
-	"gomoku/pkg/playboard"
 	"math"
 	"sort"
 	"strings"
@@ -18,19 +17,19 @@ var t = 0
 
 //const maxValueWin = 1000000000
 
-var setRulesChildren = map[int]playboard.ConditionFn{
-	1:                playboard.ConditionHorizontal,
-	playboard.N:      playboard.ConditionVertical,
-	playboard.N + 1:  playboard.ConditionBackDiagonal,
-	playboard.N - 1:  playboard.ConditionForwardDiagonal,
-	-1:               playboard.ConditionHorizontal,
-	-playboard.N:     playboard.ConditionVertical,
-	-playboard.N - 1: playboard.ConditionBackDiagonal,
-	-playboard.N + 1: playboard.ConditionForwardDiagonal,
+var setRulesChildren = map[int]ConditionFn{
+	1:      ConditionHorizontal,
+	N:      ConditionVertical,
+	N + 1:  ConditionBackDiagonal,
+	N - 1:  ConditionForwardDiagonal,
+	-1:     ConditionHorizontal,
+	-N:     ConditionVertical,
+	-N - 1: ConditionBackDiagonal,
+	-N + 1: ConditionForwardDiagonal,
 }
 
 func Heuristic(state State, symbol string) float64 {
-	defer playboard.TimeTrack(time.Now(), "Heuristic", playboard.RunTimesHeuristic, playboard.AllTimesHeuristic)
+	defer TimeTrack(time.Now(), "Heuristic", RunTimesHeuristic, AllTimesHeuristic)
 	num := 0.0
 
 	//count по каждой стороне
@@ -40,15 +39,15 @@ func Heuristic(state State, symbol string) float64 {
 		symbol = string(state.node[state.index])
 	}
 
-	setRules := map[int]playboard.ConditionFn{
-		1:               playboard.ConditionHorizontal,
-		playboard.N:     playboard.ConditionVertical,
-		playboard.N + 1: playboard.ConditionBackDiagonal,
-		playboard.N - 1: playboard.ConditionForwardDiagonal,
+	setRules := map[int]ConditionFn{
+		1:     ConditionHorizontal,
+		N:     ConditionVertical,
+		N + 1: ConditionBackDiagonal,
+		N - 1: ConditionForwardDiagonal,
 	}
 
 	for step, condition := range setRules {
-		count, halfFree, free := playboard.CountInRow(state.node, state.index, step, condition, symbol)
+		count, halfFree, free := CountInRow(state.node, state.index, step, condition, symbol)
 		if count >= 5 { // TO DO and not capture
 			//num = 1000000000
 			//break
@@ -81,14 +80,14 @@ func Heuristic(state State, symbol string) float64 {
 func UpdateSetChildren(index int, playBoard string, set intSet) {
 	for step, condition := range setRulesChildren {
 		j := index + step
-		if j >= 0 && j < playboard.N*playboard.N && condition(j, index) && string(playBoard[j]) == playboard.EmptySymbol {
+		if j >= 0 && j < N*N && condition(j, index) && string(playBoard[j]) == EmptySymbol {
 			set[j] = member
 		}
 	}
 }
 
-func getChildren(node string, index int, currentPlayer playboard.Player, childIndexesSet intSet) []State {
-	defer playboard.TimeTrack(time.Now(), "getChildren", playboard.RunTimesgetChildren, playboard.AllTimesgetChildren)
+func getChildren(node string, index int, currentPlayer Player, childIndexesSet intSet) []State {
+	defer TimeTrack(time.Now(), "getChildren", RunTimesgetChildren, AllTimesgetChildren)
 	var children []State
 
 	if index != -1 {
@@ -96,7 +95,7 @@ func getChildren(node string, index int, currentPlayer playboard.Player, childIn
 	}
 
 	for k := range childIndexesSet {
-		newPlayBoard, err := playboard.PutStone(node, k, &currentPlayer)
+		newPlayBoard, err := PutStone(node, k, &currentPlayer)
 		if err == nil {
 			children = append(children, State{newPlayBoard, k, 0})
 			//children[k] = newPlayBoard
@@ -109,12 +108,12 @@ func getChildren(node string, index int, currentPlayer playboard.Player, childIn
 }
 
 func getAllIndexChildren(playBoard string) intSet {
-	defer playboard.TimeTrack(time.Now(), "getAllIndexChildren", nil, nil)
+	defer TimeTrack(time.Now(), "getAllIndexChildren", nil, nil)
 	set := make(intSet)
 
 	for index, val := range playBoard {
 		value := string(val)
-		if value != playboard.EmptySymbol {
+		if value != EmptySymbol {
 			UpdateSetChildren(index, playBoard, set)
 		}
 	}
@@ -123,7 +122,7 @@ func getAllIndexChildren(playBoard string) intSet {
 }
 
 func copySet(children []State) intSet {
-	defer playboard.TimeTrack(time.Now(), "copySet", playboard.RunTimesCopySet, playboard.AllTimesCopySet)
+	defer TimeTrack(time.Now(), "copySet", RunTimesCopySet, AllTimesCopySet)
 	setNewChildIndexes := make(intSet)
 
 	for _, stateChild := range children {
@@ -134,7 +133,7 @@ func copySet(children []State) intSet {
 }
 
 func getIndexes(children []Child) intSet {
-	defer playboard.TimeTrack(time.Now(), "copySet", playboard.RunTimesCopySet, playboard.AllTimesCopySet)
+	defer TimeTrack(time.Now(), "copySet", RunTimesCopySet, AllTimesCopySet)
 	setNewChildIndexes := make(intSet)
 
 	for _, child := range children {
@@ -255,9 +254,9 @@ type State struct {
 	captures int
 }
 
-func NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer playboard.Player, humanPlayer playboard.Player, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
+func NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer Player, humanPlayer Player, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
 	//println("depth", depth)
-	if depth == 0 || playboard.GameOver(state.node, &machinePlayer, &humanPlayer, state.index) {
+	if depth == 0 || GameOver(state.node, &machinePlayer, &humanPlayer, state.index) {
 		var h1, h2 float64
 
 		if string(state.node[state.index]) == machinePlayer.Symbol {
@@ -307,35 +306,35 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 	return maxEval, maxIndex
 }
 
-func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboard.Player) int {
-	if playboard.RunTimesHeuristic != nil {
-		*playboard.RunTimesHeuristic = 0
-		*playboard.RunTimesIsOver = 0
-		*playboard.RunTimesgetChildren = 0
-		*playboard.RunTimesCopySet = 0
+func Algo(playBoard string, machinePlayer Player, humanPlayer Player) int {
+	if RunTimesHeuristic != nil {
+		*RunTimesHeuristic = 0
+		*RunTimesIsOver = 0
+		*RunTimesgetChildren = 0
+		*RunTimesCopySet = 0
 
-		*playboard.AllTimesHeuristic = 0
-		*playboard.AllTimesIsOver = 0
-		*playboard.AllTimesgetChildren = 0
-		*playboard.AllTimesCopySet = 0
+		*AllTimesHeuristic = 0
+		*AllTimesIsOver = 0
+		*AllTimesgetChildren = 0
+		*AllTimesCopySet = 0
 	} else {
-		RunTimesHeuristic := 0
-		playboard.RunTimesHeuristic = &RunTimesHeuristic
-		RunTimesIsOver := 0
-		playboard.RunTimesIsOver = &RunTimesIsOver
-		RunTimesgetChildren := 0
-		playboard.RunTimesgetChildren = &RunTimesgetChildren
-		RunTimesCopySet := 0
-		playboard.RunTimesCopySet = &RunTimesCopySet
+		_RunTimesHeuristic := 0
+		RunTimesHeuristic = &_RunTimesHeuristic
+		_RunTimesIsOver := 0
+		RunTimesIsOver = &_RunTimesIsOver
+		_RunTimesgetChildren := 0
+		RunTimesgetChildren = &_RunTimesgetChildren
+		_RunTimesCopySet := 0
+		RunTimesCopySet = &_RunTimesCopySet
 
-		var AllTimesHeuristic time.Duration = 0
-		playboard.AllTimesHeuristic = &AllTimesHeuristic
-		var AllTimesIsOver time.Duration = 0
-		playboard.AllTimesIsOver = &AllTimesIsOver
-		var AllTimesgetChildren time.Duration = 0
-		playboard.AllTimesgetChildren = &AllTimesgetChildren
-		var AllTimesCopySet time.Duration = 0
-		playboard.AllTimesCopySet = &AllTimesCopySet
+		var _AllTimesHeuristic time.Duration = 0
+		AllTimesHeuristic = &_AllTimesHeuristic
+		var _AllTimesIsOver time.Duration = 0
+		AllTimesIsOver = &_AllTimesIsOver
+		var _AllTimesgetChildren time.Duration = 0
+		AllTimesgetChildren = &_AllTimesgetChildren
+		var _AllTimesCopySet time.Duration = 0
+		AllTimesCopySet = &_AllTimesCopySet
 	}
 
 	depth := 10 //TO DO make config
