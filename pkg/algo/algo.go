@@ -248,41 +248,47 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 	}
 }
 
-func NegaScout(node string, depth int, alpha float64, beta float64, multiplier int, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
+type State struct {
+	node     string
+	index    int
+	captures int
+}
+
+func NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer playboard.Player, humanPlayer playboard.Player, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
 	//println("depth", depth)
-	if depth == 0 || playboard.GameOver(node, &machinePlayer, &humanPlayer, index) {
+	if depth == 0 || playboard.GameOver(state.node, &machinePlayer, &humanPlayer, state.index) {
 		var h1, h2 float64
 
-		if string(node[index]) == machinePlayer.Symbol {
-			h1 = Heuristic(node, index, machinePlayer.Symbol)
-			node = strings.Join([]string{node[:index], humanPlayer.Symbol, node[index+1:]}, "")
-			h2 = Heuristic(node, index, humanPlayer.Symbol)
+		if string(state.node[state.index]) == machinePlayer.Symbol {
+			h1 = Heuristic(state.node, state.index, machinePlayer.Symbol)
+			state.node = strings.Join([]string{state.node[:state.index], humanPlayer.Symbol, state.node[state.index+1:]}, "")
+			h2 = Heuristic(state.node, state.index, humanPlayer.Symbol)
 		} else {
-			h2 = Heuristic(node, index, humanPlayer.Symbol)
-			node = strings.Join([]string{node[:index], machinePlayer.Symbol, node[index+1:]}, "")
-			h1 = Heuristic(node, index, machinePlayer.Symbol)
+			h2 = Heuristic(state.node, state.index, humanPlayer.Symbol)
+			state.node = strings.Join([]string{state.node[:state.index], machinePlayer.Symbol, state.node[state.index+1:]}, "")
+			h1 = Heuristic(state.node, state.index, machinePlayer.Symbol)
 		}
 
 		if h1 == math.Inf(1) {
 			// println("hi");
 		}
 
-		return float64(multiplier) * (h1 - h2), index
+		return float64(multiplier) * (h1 - h2), state.index
 	}
 
 	maxEval := math.Inf(-1)
 	maxIndex := -1
 	var children map[int]string
 	if multiplier == 1 {
-		children = getChildren(node, index, machinePlayer, childIndexesSet)
+		children = getChildren(state.node, state.index, machinePlayer, childIndexesSet)
 	} else {
-		children = getChildren(node, index, humanPlayer, childIndexesSet)
+		children = getChildren(state.node, state.index, humanPlayer, childIndexesSet)
 	}
 	childrenSlice := cutChildren(children, transpositions)
 
 	for _, child := range childrenSlice {
 		setNewChildIndexes := copySet(children)
-		eval, _ := NegaScout(child.PlayBoard, depth-1, -alpha, -beta, -multiplier, machinePlayer, humanPlayer, child.Index, setNewChildIndexes, transpositions, allIndexesPath)
+		eval, _ := NegaScout(State{child.PlayBoard, child.Index, 0}, depth-1, -alpha, -beta, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
 
 		eval = -eval
 		if eval >= maxEval { //because both values are -inf eval >= maxEval
@@ -345,7 +351,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 	if len(setChildren) != 0 {
 		allIndexesPath := ""
 		//val, index, allIndexesPath, depth = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
-		_, index = NegaScout(playBoard, depth, negInf, posInf, 1, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
+		_, index = NegaScout(State{playBoard, index, 0}, depth, negInf, posInf, 1, machinePlayer, humanPlayer, setChildren, transpositions, allIndexesPath)
 		//fmt.Println(val, depth)
 		//playboard.PrintPlayBoard(allIndexesPath)
 	} else {
