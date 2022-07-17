@@ -9,20 +9,16 @@ import (
 	"strings"
 )
 
-func HumanTurn(reader *bufio.Reader, currentPlayer playboard.Player, playBoard string) (string, error) {
+func HumanTurn(reader *bufio.Reader, currentPlayer playboard.Player) (int, error) {
 	fmt.Println("Player ", currentPlayer, ", enter positions (like 1 2):")
 	text, _ := reader.ReadString('\n')
 	pos, err := playboard.ParsePositions(text)
 	if err != nil {
-		return "", err
+		return -1, err
 	}
 
 	index := pos.Y*playboard.N + pos.X
-	newPlayBoard, err := playboard.PutStone(playBoard, index, &currentPlayer)
-	if err != nil {
-		return "", err
-	}
-	return newPlayBoard, nil
+	return index, nil
 
 }
 
@@ -33,7 +29,12 @@ func HumanPlay() {
 	currentPlayer := playboard.Player1
 	anotherPlayer := playboard.Player2
 	for !playboard.GameOver(playBoard, &currentPlayer, &anotherPlayer) {
-		newPlayBoard, err := HumanTurn(reader, currentPlayer, playBoard)
+		humanIndex, err := HumanTurn(reader, currentPlayer)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		newPlayBoard, err := playboard.PutStone(playBoard, humanIndex, &currentPlayer)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -65,7 +66,12 @@ func AIPlay() {
 			playboard.PrintPlayBoard(playBoard)
 			machineTurn = false
 		} else {
-			newPlayBoard, err = HumanTurn(reader, humanPlayer, playBoard)
+			humanIndex, err := HumanTurn(reader, humanPlayer)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			newPlayBoard, err = playboard.PutStone(playBoard, humanIndex, &humanPlayer)
 			if err != nil {
 				fmt.Println(err)
 				continue
