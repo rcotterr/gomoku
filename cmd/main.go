@@ -9,7 +9,7 @@ func main() {
 	Human := flag.Bool("human", false, "Play against another human player")
 	flag.Parse()
 
-	//v := visualize.Vis()
+	//visualize.Vis()
 	if *Human {
 		play.HumanPlay()
 	} else {
