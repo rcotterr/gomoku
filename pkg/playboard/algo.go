@@ -36,7 +36,7 @@ func Heuristic(state State, symbol string) float64 {
 	//symbol := string(node[index])
 	//symbol := "M"
 	if symbol == "" {
-		symbol = string(state.node[state.index])
+		symbol = string(state.Node[state.index])
 	}
 
 	setRules := map[int]ConditionFn{
@@ -47,7 +47,7 @@ func Heuristic(state State, symbol string) float64 {
 	}
 
 	for step, condition := range setRules {
-		count, halfFree, free := CountInRow(state.node, state.index, step, condition, symbol)
+		count, halfFree, free := CountInRow(state.Node, state.index, step, condition, symbol)
 		if count >= 5 { // TO DO and not capture
 			//num = 1000000000
 			//break
@@ -95,9 +95,9 @@ func getChildren(node string, index int, currentPlayer Player, childIndexesSet i
 	}
 
 	for k := range childIndexesSet {
-		newPlayBoard, err := PutStone(node, k, &currentPlayer)
+		stateChild, err := PutStone(node, k, &currentPlayer)
 		if err == nil {
-			children = append(children, State{newPlayBoard, k, 0})
+			children = append(children, stateChild)
 			//children[k] = newPlayBoard
 		}
 	}
@@ -155,14 +155,14 @@ func cutChildren(children []State, transpositions stringSet) []Child {
 
 	var new_ []Child
 	for _, childState := range children {
-		_, ok := transpositions[childState.node]
+		_, ok := transpositions[childState.Node]
 		if ok {
 			t += 1
 			continue
 		}
-		transpositions[childState.node] = member
-		h := Heuristic(State{childState.node, childState.index, 0}, "")
-		new_ = append(new_, Child{childState.index, h, childState.node})
+		transpositions[childState.Node] = member
+		h := Heuristic(State{childState.Node, childState.index, 0}, "")
+		new_ = append(new_, Child{childState.index, h, childState.Node})
 
 	}
 
@@ -249,23 +249,23 @@ func cutChildren(children []State, transpositions stringSet) []Child {
 //}
 
 type State struct {
-	node     string
+	Node     string
 	index    int
 	captures int
 }
 
 func NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer Player, humanPlayer Player, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
 	//println("depth", depth)
-	if depth == 0 || GameOver(state.node, &machinePlayer, &humanPlayer, state.index) {
+	if depth == 0 || GameOver(state.Node, &machinePlayer, &humanPlayer, state.index) {
 		var h1, h2 float64
 
-		if string(state.node[state.index]) == machinePlayer.Symbol {
+		if string(state.Node[state.index]) == machinePlayer.Symbol {
 			h1 = Heuristic(state, machinePlayer.Symbol)
-			state.node = strings.Join([]string{state.node[:state.index], humanPlayer.Symbol, state.node[state.index+1:]}, "")
+			state.Node = strings.Join([]string{state.Node[:state.index], humanPlayer.Symbol, state.Node[state.index+1:]}, "")
 			h2 = Heuristic(state, humanPlayer.Symbol)
 		} else {
 			h2 = Heuristic(state, humanPlayer.Symbol)
-			state.node = strings.Join([]string{state.node[:state.index], machinePlayer.Symbol, state.node[state.index+1:]}, "")
+			state.Node = strings.Join([]string{state.Node[:state.index], machinePlayer.Symbol, state.Node[state.index+1:]}, "")
 			h1 = Heuristic(state, machinePlayer.Symbol)
 		}
 
@@ -280,9 +280,9 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 	maxIndex := -1
 	var children []State
 	if multiplier == 1 {
-		children = getChildren(state.node, state.index, machinePlayer, childIndexesSet)
+		children = getChildren(state.Node, state.index, machinePlayer, childIndexesSet)
 	} else {
-		children = getChildren(state.node, state.index, humanPlayer, childIndexesSet)
+		children = getChildren(state.Node, state.index, humanPlayer, childIndexesSet)
 	}
 	childrenSlice := cutChildren(children, transpositions)
 

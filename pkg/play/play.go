@@ -24,7 +24,7 @@ func HumanTurn(reader *bufio.Reader, currentPlayer playboard.Player) (int, error
 func HumanPlay() {
 	var playBoard = strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N)
 	var err error
-	var newPlayBoard string
+	var newPlayBoard playboard.State
 	reader := bufio.NewReader(os.Stdin)
 	playboard.PrintPlayBoard(playBoard)
 	currentPlayer := playboard.Player1
@@ -41,7 +41,7 @@ func HumanPlay() {
 			fmt.Println(err)
 			continue
 		}
-		playBoard = newPlayBoard
+		playBoard = newPlayBoard.Node
 		playboard.PrintPlayBoard(playBoard)
 		currentPlayer, anotherPlayer = anotherPlayer, currentPlayer
 	}
@@ -55,18 +55,19 @@ func AIPlay() {
 	machineTurn := true
 	var err error
 	var newIndex int
-	var newPlayBoard string
+	var newPlayBoard playboard.State
 	index := -1
 	file, _ := os.Create("file41")
 	playboard.File = file
 	for !playboard.GameOver(playBoard, &machinePlayer, &humanPlayer, index) {
 		if machineTurn {
 			index = playboard.Algo(playBoard, machinePlayer, humanPlayer)
-			playBoard, err = playboard.PutStone(playBoard, index, &machinePlayer)
+			newPlayBoard, err = playboard.PutStone(playBoard, index, &machinePlayer)
 			if err != nil {
 				fmt.Println("Invalid machine algo!!!!!", err)
 				return
 			}
+			playBoard = newPlayBoard.Node
 			playboard.PrintPlayBoard(playBoard)
 			machineTurn = false
 		} else {
@@ -80,7 +81,7 @@ func AIPlay() {
 				fmt.Println(err)
 				continue
 			}
-			playBoard = newPlayBoard
+			playBoard = newPlayBoard.Node
 			index = newIndex
 			playboard.PrintPlayBoard(playBoard)
 			machineTurn = true

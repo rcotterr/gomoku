@@ -231,12 +231,12 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-func PutStone(playBoard string, index int, currentPlayer *Player) (string, error) {
+func PutStone(playBoard string, index int, currentPlayer *Player) (State, error) {
 
 	//index := pos.Y*N + pos.X
 	//fmt.Println(index)
 	if string(playBoard[index]) != EmptySymbol {
-		return "", fmt.Errorf("position is busy")
+		return State{}, fmt.Errorf("position is busy")
 	}
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
@@ -250,10 +250,10 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (string, error
 		newPlayBoard = strings.Join([]string{newPlayBoard[:*index1], EmptySymbol, newPlayBoard[*index1+1 : *index2], EmptySymbol, newPlayBoard[*index2+1:]}, "")
 		currentPlayer.Captures += 1
 	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
-		return "", fmt.Errorf("position is forbidden")
+		return State{}, fmt.Errorf("position is forbidden")
 	}
 
-	return newPlayBoard, nil
+	return State{newPlayBoard, index, 0}, nil
 }
 
 func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {

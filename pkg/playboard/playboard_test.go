@@ -672,10 +672,10 @@ func TestPutStone(t *testing.T) {
 		t.Run(tc.playboard, func(t *testing.T) {
 			index := tc.pos.Y*N + tc.pos.X
 
-			newPlayboard, err := PutStone(tc.playboard, index, &tc.currentPlayer)
+			state, err := PutStone(tc.playboard, index, &tc.currentPlayer)
 
 			for index, symbol := range tc.expectedNewSymbol {
-				assert.Equal(t, symbol, string(newPlayboard[index]))
+				assert.Equal(t, symbol, string(state.Node[index]))
 			}
 			assert.Equal(t, tc.expectedNumCaptures, tc.currentPlayer.Captures)
 			assert.Equal(t, tc.expectedError, err)
