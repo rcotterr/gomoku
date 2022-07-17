@@ -222,12 +222,12 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	for step, condition := range setRules {
 		if isFreeThreeRow := isFreeThree(step, condition, playBoard, index, currentPlayer); isFreeThreeRow {
 			countFreeThree += 1
+			if countFreeThree == 2 {
+				return true
+			}
 		}
 	}
 
-	if countFreeThree >= 2 {
-		return true
-	}
 	return false
 }
 
@@ -254,24 +254,6 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (string, error
 	}
 
 	return newPlayBoard, nil
-}
-
-func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol string) bool {
-	count := 1 //TO DO add if i % n + 5 >= n
-	j := i + step
-	for condition(j, i) && j >= 0 && j < N*N {
-		if string(playBoard[j]) == symbol {
-			count += 1
-		} else {
-			break
-		}
-		j += step
-	}
-	if count >= 5 {
-		//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", symbol)
-		return true
-	}
-	return false
 }
 
 func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {
@@ -312,18 +294,6 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 
 func checkFive(playBoard string, index int, symbol string) bool {
 
-	//setRules := map[int]ConditionFn{
-	//	1:     ConditionHorizontal,
-	//	N:     ConditionVertical,
-	//	N + 1: ConditionBackDiagonal,
-	//	N - 1: ConditionForwardDiagonal,
-	//}
-	//
-	//for step, condition := range setRules {
-	//	if FiveInRow(i, step, condition, playBoard, symbol) {
-	//		return true
-	//	}
-	//}
 	setRules := map[int]ConditionFn{
 		1:     ConditionHorizontal,
 		N:     ConditionVertical,
@@ -341,7 +311,6 @@ func checkFive(playBoard string, index int, symbol string) bool {
 	return false
 	//TO DO add possibleCapture than not win
 	// 6 stones and capture only in 6
-	//TO DO check only from new stone
 }
 
 func GameOver(playBoard string, player1 *Player, player2 *Player, index int) bool { //TO DO change func without print

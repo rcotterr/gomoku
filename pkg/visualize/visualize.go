@@ -26,10 +26,8 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func Vis() {
 	game := &Game{}
-	// Specify the window size as you like. Here, a doubled size is specified.
-	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Your game's title")
-	// Call ebiten.RunGame to start your game loop.
+	ebiten.SetWindowSize(1600, 1040)
+	ebiten.SetWindowTitle("Gomoku")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}

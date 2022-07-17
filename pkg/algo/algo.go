@@ -347,7 +347,7 @@ func Algo(playBoard string, machinePlayer playboard.Player, humanPlayer playboar
 		//val, index, allIndexesPath, depth = alphaBeta(playBoard, depth, negInf, posInf, true, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
 		_, index = NegaScout(playBoard, depth, negInf, posInf, 1, machinePlayer, humanPlayer, index, setChildren, transpositions, allIndexesPath)
 		//fmt.Println(val, depth)
-		playboard.PrintPlayBoard(allIndexesPath)
+		//playboard.PrintPlayBoard(allIndexesPath)
 	} else {
 		//index = 18*19 + 18
 		index = 9*19 + 9
