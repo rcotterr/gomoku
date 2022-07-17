@@ -274,8 +274,56 @@ func FiveInRow(i int, step int, condition ConditionFn, playBoard string, symbol 
 	return false
 }
 
-func checkFive(playBoard string, i int, symbol string) bool {
+func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {
 
+	empty := 0
+
+	hreny := node[index:]
+	hreny = string(hreny)
+	startIndex := index
+	for tmpIndex := index - step; tmpIndex >= 0 && tmpIndex > index-(step*5); tmpIndex -= step {
+		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
+			startIndex = tmpIndex
+		} else {
+			if string(node[tmpIndex]) == EmptySymbol {
+				empty += 1
+			}
+			break
+		}
+	}
+
+	endIndex := index
+	for tmpIndex := index + step; tmpIndex < N*N && tmpIndex < index+(step*5); tmpIndex += step {
+		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
+			endIndex = tmpIndex
+		} else {
+			if string(node[tmpIndex]) == EmptySymbol {
+				empty += 1
+			}
+			break
+		}
+	}
+
+	count := ((endIndex - startIndex) / step) + 1
+
+	return count, empty == 1, empty == 2
+
+}
+
+func checkFive(playBoard string, index int, symbol string) bool {
+
+	//setRules := map[int]ConditionFn{
+	//	1:     ConditionHorizontal,
+	//	N:     ConditionVertical,
+	//	N + 1: ConditionBackDiagonal,
+	//	N - 1: ConditionForwardDiagonal,
+	//}
+	//
+	//for step, condition := range setRules {
+	//	if FiveInRow(i, step, condition, playBoard, symbol) {
+	//		return true
+	//	}
+	//}
 	setRules := map[int]ConditionFn{
 		1:     ConditionHorizontal,
 		N:     ConditionVertical,
@@ -284,7 +332,8 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	}
 
 	for step, condition := range setRules {
-		if FiveInRow(i, step, condition, playBoard, symbol) {
+		count, _, _ := CountInRow(playBoard, index, step, condition, symbol)
+		if count >= 5 { // TO DO and not capture
 			return true
 		}
 	}
@@ -295,23 +344,24 @@ func checkFive(playBoard string, i int, symbol string) bool {
 	//TO DO check only from new stone
 }
 
-func GameOver(playBoard string, player1 *Player, player2 *Player) bool { //TO DO change func without print
+func GameOver(playBoard string, player1 *Player, player2 *Player, index int) bool { //TO DO change func without print
 	defer TimeTrack(time.Now(), "GameOver", RunTimesIsOver, AllTimesIsOver)
 
+	if index == -1 {
+		return false //first launch
+	}
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
 			//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
 			return true
 		}
 	}
+	//if string(playBoard[index]) == EmptySymbol {
+	//	return false
+	//}
 
-	for j, val := range playBoard { // TO DO not all check but only 1 last put stone  && not range but while i < len
-		value := string(val)
-		if value != EmptySymbol {
-			if checkFive(playBoard, j, value) {
-				return true
-			}
-		}
+	if checkFive(playBoard, index, string(playBoard[index])) {
+		return true
 	}
 
 	if containEmpty := strings.Contains(playBoard, EmptySymbol); !containEmpty {

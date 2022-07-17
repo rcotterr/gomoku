@@ -11,6 +11,7 @@ func TestGameOver(t *testing.T) {
 		name           string
 		playboard      string
 		expectedIsOver bool
+		index          int
 		player1        *Player
 		player2        *Player
 	}{
@@ -58,6 +59,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"..............00000",
+			index:          360,
 			expectedIsOver: true,
 		},
 		{
@@ -81,6 +83,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
+			index:          139,
 			expectedIsOver: true,
 		},
 		{
@@ -104,6 +107,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
+			index:          45,
 			expectedIsOver: true,
 		},
 		{
@@ -127,6 +131,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
+			index:          82,
 			expectedIsOver: true,
 		},
 		{
@@ -150,6 +155,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
+			index:          107,
 			expectedIsOver: true,
 		},
 		{
@@ -173,6 +179,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
+			index:          130,
 			expectedIsOver: false,
 		},
 		{
@@ -196,6 +203,7 @@ func TestGameOver(t *testing.T) {
 				"............1......" +
 				"............1......" +
 				"............11.....",
+			index:          354,
 			expectedIsOver: false,
 		},
 		{
@@ -220,6 +228,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"...................",
 			expectedIsOver: true,
+			index:          0,
 			player1:        &Player{0, SymbolPlayer1},
 			player2:        &Player{5, SymbolPlayer2},
 		},
@@ -245,6 +254,7 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"...................",
 			expectedIsOver: true,
+			index:          0,
 			player1:        &Player{5, SymbolPlayer1},
 			player2:        &Player{0, SymbolPlayer2},
 		},
@@ -269,6 +279,7 @@ func TestGameOver(t *testing.T) {
 				"0000000000000000000" +
 				"0000000000000000000" +
 				"0000000000000000000",
+			index:          0,
 			expectedIsOver: true,
 		},
 	}
@@ -276,7 +287,7 @@ func TestGameOver(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			isOver := GameOver(tc.playboard, tc.player1, tc.player2)
+			isOver := GameOver(tc.playboard, tc.player1, tc.player2, tc.index)
 
 			assert.Equal(t, tc.expectedIsOver, isOver)
 		})

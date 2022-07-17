@@ -29,42 +29,6 @@ var setRulesChildren = map[int]playboard.ConditionFn{
 	-playboard.N + 1: playboard.ConditionForwardDiagonal,
 }
 
-func countInRow(node string, index int, step int, condition playboard.ConditionFn, symbol string) (int, bool, bool) {
-
-	empty := 0
-
-	hreny := node[index:]
-	hreny = string(hreny)
-	startIndex := index
-	for tmpIndex := index - step; tmpIndex >= 0 && tmpIndex > index-(step*5); tmpIndex -= step {
-		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
-			startIndex = tmpIndex
-		} else {
-			if string(node[tmpIndex]) == playboard.EmptySymbol {
-				empty += 1
-			}
-			break
-		}
-	}
-
-	endIndex := index
-	for tmpIndex := index + step; tmpIndex < playboard.N*playboard.N && tmpIndex < index+(step*5); tmpIndex += step {
-		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
-			endIndex = tmpIndex
-		} else {
-			if string(node[tmpIndex]) == playboard.EmptySymbol {
-				empty += 1
-			}
-			break
-		}
-	}
-
-	count := ((endIndex - startIndex) / step) + 1
-
-	return count, empty == 1, empty == 2
-
-}
-
 func Heuristic(node string, index int, symbol string) float64 {
 	defer playboard.TimeTrack(time.Now(), "Heuristic", playboard.RunTimesHeuristic, playboard.AllTimesHeuristic)
 	num := 0.0
@@ -84,8 +48,8 @@ func Heuristic(node string, index int, symbol string) float64 {
 	}
 
 	for step, condition := range setRules {
-		count, halfFree, free := countInRow(node, index, step, condition, symbol)
-		if count == 5 { // TO DO and not capture
+		count, halfFree, free := playboard.CountInRow(node, index, step, condition, symbol)
+		if count >= 5 { // TO DO and not capture
 			//num = 1000000000
 			//break
 			return math.Inf(1)
@@ -215,7 +179,7 @@ func cutChildren(children map[int]string, transpositions stringSet) []Child {
 func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPlayer bool, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int, string, int) {
 	defer playboard.TimeTrack(time.Now(), fmt.Sprintf("alphaBeta depth {%d}", depth), nil, nil)
 
-	if depth == 0 || playboard.GameOver(node, &machinePlayer, &humanPlayer) {
+	if depth == 0 || playboard.GameOver(node, &machinePlayer, &humanPlayer, index) {
 		symbol := string(node[index])
 		//h1 := Heuristic(node, index, symbol) + float64(depth * 1000)
 		h1 := Heuristic(node, index, symbol)
@@ -286,7 +250,7 @@ func alphaBeta(node string, depth int, alpha float64, beta float64, maximizingPl
 
 func NegaScout(node string, depth int, alpha float64, beta float64, multiplier int, machinePlayer playboard.Player, humanPlayer playboard.Player, index int, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
 	//println("depth", depth)
-	if depth == 0 || playboard.GameOver(node, &machinePlayer, &humanPlayer) {
+	if depth == 0 || playboard.GameOver(node, &machinePlayer, &humanPlayer, index) {
 		var h1, h2 float64
 
 		if string(node[index]) == machinePlayer.Symbol {
