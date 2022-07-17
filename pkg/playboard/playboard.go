@@ -241,7 +241,7 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, error)
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
 
-	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.Symbol)
+	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
 	if capture {
 		//fmt.Println("Capture: ", capture, *index1, *index2)
 		if *index1 > *index2 {
@@ -253,7 +253,7 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, error)
 		return State{}, fmt.Errorf("position is forbidden")
 	}
 
-	return State{newPlayBoard, index, 0}, nil
+	return State{newPlayBoard, index, 0}, nil //TO DO return not always 0 captures
 }
 
 func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {
