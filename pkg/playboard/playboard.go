@@ -142,7 +142,7 @@ func checkCapturedByCondition(step int, condition ConditionFn, playBoard string,
 	return false, nil, nil
 }
 
-func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, *int) {
+func isCaptured(playBoard string, index int, currentPlayer string) (int, []int) {
 	setRules := map[int]ConditionFn{
 		1:      ConditionHorizontal,
 		N:      ConditionVertical,
@@ -154,13 +154,17 @@ func isCaptured(playBoard string, index int, currentPlayer string) (bool, *int, 
 		-N + 1: ConditionForwardDiagonal,
 	}
 
+	var arrIndexes []int
+	numCaptures := 0
+
 	for step, condition := range setRules {
 		if isCapture, index1, index2 := checkCapturedByCondition(step, condition, playBoard, index, currentPlayer); isCapture {
-			return isCapture, index1, index2
+			numCaptures += 1
+			arrIndexes = append(arrIndexes, *index1, *index2)
 		}
 	}
 
-	return false, nil, nil
+	return numCaptures, arrIndexes
 }
 
 func isFreeThree(step int, condition ConditionFn, playBoard string, index int, currentPlayer string) bool {
@@ -241,19 +245,17 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, error)
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
 
-	capture, index1, index2 := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
-	if capture {
-		//fmt.Println("Capture: ", capture, *index1, *index2)
-		if *index1 > *index2 {
-			index1, index2 = index2, index1
+	numCaptures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
+	if numCaptures > 0 {
+		for _, capturedIndex := range arrIndexes {
+			newPlayBoard = strings.Join([]string{newPlayBoard[:capturedIndex], EmptySymbol, newPlayBoard[capturedIndex+1:]}, "")
 		}
-		newPlayBoard = strings.Join([]string{newPlayBoard[:*index1], EmptySymbol, newPlayBoard[*index1+1 : *index2], EmptySymbol, newPlayBoard[*index2+1:]}, "")
-		currentPlayer.Captures += 1
+		currentPlayer.Captures += numCaptures
 	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
 		return State{}, fmt.Errorf("position is forbidden")
 	}
 
-	return State{newPlayBoard, index, 0}, nil //TO DO return not always 0 captures
+	return State{newPlayBoard, index, numCaptures}, nil //TO DO return not always 0 captures
 }
 
 func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {

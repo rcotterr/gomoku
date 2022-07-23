@@ -296,13 +296,12 @@ func TestGameOver(t *testing.T) {
 
 func TestIsCapture(t *testing.T) {
 	testCases := []struct {
-		name              string
-		playboard         string
-		index             int
-		currentPlayer     string
-		expectedIsCapture bool
-		expectedIndex1    int
-		expectedIndex2    int
+		name            string
+		playboard       string
+		index           int
+		currentPlayer   string
+		numCaptures     int
+		expectedIndexes intSet
 	}{
 		{
 			name: "is capture player 0",
@@ -325,11 +324,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			index:             0,
-			currentPlayer:     SymbolPlayer1,
-			expectedIsCapture: true,
-			expectedIndex1:    1,
-			expectedIndex2:    2,
+			index:           0,
+			currentPlayer:   SymbolPlayer1,
+			numCaptures:     1,
+			expectedIndexes: intSet{2: member, 1: member},
 		},
 		{
 			name: "is capture player 1",
@@ -353,11 +351,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...............1001",
 
-			index:             357,
-			currentPlayer:     SymbolPlayer2,
-			expectedIsCapture: true,
-			expectedIndex1:    358,
-			expectedIndex2:    359,
+			index:           357,
+			currentPlayer:   SymbolPlayer2,
+			numCaptures:     1,
+			expectedIndexes: intSet{358: member, 359: member},
 		},
 		{
 			name: "is capture right diagonal",
@@ -381,11 +378,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             22,
-			currentPlayer:     SymbolPlayer1,
-			expectedIsCapture: true,
-			expectedIndex1:    42,
-			expectedIndex2:    62,
+			index:           22,
+			currentPlayer:   SymbolPlayer1,
+			numCaptures:     1,
+			expectedIndexes: intSet{42: member, 62: member},
 		},
 		{
 			name: "is capture left diagonal",
@@ -409,19 +405,18 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             28,
-			currentPlayer:     SymbolPlayer1,
-			expectedIsCapture: true,
-			expectedIndex1:    46,
-			expectedIndex2:    64,
+			index:           28,
+			currentPlayer:   SymbolPlayer1,
+			numCaptures:     1,
+			expectedIndexes: intSet{46: member, 64: member},
 		},
 		{
 			name: "is capture vertical",
 			playboard: "..................." +
 				".........1........." +
-				".........0........." +
-				".........0........." +
-				".........1........." +
+				".........00........" +
+				".........0.0......." +
+				".........1..1......" +
 				"..................." +
 				"..................." +
 				"..................." +
@@ -437,11 +432,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             28,
-			currentPlayer:     SymbolPlayer2,
-			expectedIsCapture: true,
-			expectedIndex1:    47,
-			expectedIndex2:    66,
+			index:           28,
+			currentPlayer:   SymbolPlayer2,
+			numCaptures:     2,
+			expectedIndexes: intSet{47: member, 66: member, 48: member, 68: member},
 		},
 		{
 			name: "is capture horizontal left",
@@ -465,11 +459,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             28,
-			currentPlayer:     SymbolPlayer2,
-			expectedIsCapture: true,
-			expectedIndex1:    27,
-			expectedIndex2:    26,
+			index:           28,
+			currentPlayer:   SymbolPlayer2,
+			numCaptures:     1,
+			expectedIndexes: intSet{26: member, 27: member},
 		},
 		{
 			name: "is capture vertical upper",
@@ -493,11 +486,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             85,
-			currentPlayer:     SymbolPlayer2,
-			expectedIsCapture: true,
-			expectedIndex1:    66,
-			expectedIndex2:    47,
+			index:           85,
+			currentPlayer:   SymbolPlayer2,
+			numCaptures:     1,
+			expectedIndexes: intSet{47: member, 66: member},
 		},
 		{
 			name: "is capture right diagonal upper",
@@ -521,11 +513,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             82,
-			currentPlayer:     SymbolPlayer1,
-			expectedIsCapture: true,
-			expectedIndex1:    62,
-			expectedIndex2:    42,
+			index:           82,
+			currentPlayer:   SymbolPlayer1,
+			numCaptures:     1,
+			expectedIndexes: intSet{42: member, 62: member},
 		},
 		{
 			name: "is capture left diagonal upper",
@@ -549,11 +540,10 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             82,
-			currentPlayer:     SymbolPlayer1,
-			expectedIsCapture: true,
-			expectedIndex1:    64,
-			expectedIndex2:    46,
+			index:           82,
+			currentPlayer:   SymbolPlayer1,
+			numCaptures:     1,
+			expectedIndexes: intSet{46: member, 64: member},
 		},
 
 		{
@@ -578,9 +568,10 @@ func TestIsCapture(t *testing.T) {
 				"...............0..." +
 				"................0..",
 
-			index:             318,
-			currentPlayer:     SymbolPlayer2,
-			expectedIsCapture: false,
+			index:           318,
+			currentPlayer:   SymbolPlayer2,
+			numCaptures:     0,
+			expectedIndexes: intSet{},
 		},
 		{
 			name: "is not capture full",
@@ -604,22 +595,32 @@ func TestIsCapture(t *testing.T) {
 				"..................." +
 				"...................",
 
-			index:             2,
-			currentPlayer:     SymbolPlayer2,
-			expectedIsCapture: false,
+			index:           2,
+			currentPlayer:   SymbolPlayer2,
+			numCaptures:     0,
+			expectedIndexes: intSet{},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			isCapture, index1, index2 := isCaptured(tc.playboard, tc.index, tc.currentPlayer)
+			numCaptures, arrIndexes := isCaptured(tc.playboard, tc.index, tc.currentPlayer)
 
-			assert.Equal(t, tc.expectedIsCapture, isCapture)
-			if isCapture {
-				assert.Equal(t, tc.expectedIndex1, *index1)
-				assert.Equal(t, tc.expectedIndex2, *index2)
+			assert.Equal(t, tc.numCaptures, numCaptures)
+			//b := reflect.DeepEqual(tc.expectedIndexes, arrIndexes)
+			indexSet := make(intSet)
+			for _, elem := range arrIndexes {
+				indexSet[elem] = member
 			}
+			//reflect.DeepEqual(tc.expectedIndexes, indexSet)
+			assert.Equal(t, tc.expectedIndexes, indexSet)
+			//assert.Equal(t, true, b)
+			//assert.Equal(t, true, b)
+			//if isCapture {
+			//	assert.Equal(t, tc.expectedIndex1, *index1)
+			//	assert.Equal(t, tc.expectedIndex2, *index2)
+			//}
 		})
 	}
 }
@@ -665,6 +666,39 @@ func TestPutStone(t *testing.T) {
 				2: ".",
 			},
 			expectedNumCaptures: 1,
+			expectedError:       nil,
+		},
+		{
+			name: "two captures player 0",
+			playboard: ".110..............." +
+				"1.................." +
+				"1.................." +
+				"0.................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			pos:           &Pos{0, 0},
+			currentPlayer: Player{0, SymbolPlayer1},
+			expectedNewSymbol: map[int]string{
+				0:  "0",
+				1:  ".",
+				2:  ".",
+				19: ".",
+				38: ".",
+			},
+			expectedNumCaptures: 2,
 			expectedError:       nil,
 		},
 	}
