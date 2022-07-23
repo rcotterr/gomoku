@@ -56,7 +56,7 @@ func Heuristic(state State, symbol string) float64 {
 			num += 10000000
 		} else if count == 4 && halfFree {
 			num += 1000000
-		} else if count == 3 && free {
+		} else if count == 3 && free { //TO DO free more than one step
 			num += 100000
 		} else if count == 3 && halfFree {
 			num += 10000
@@ -72,7 +72,7 @@ func Heuristic(state State, symbol string) float64 {
 
 	}
 
-	//add capture
+	num += float64(10000000 * state.captures)
 
 	return num
 }
