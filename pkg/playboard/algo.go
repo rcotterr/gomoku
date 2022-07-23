@@ -288,7 +288,8 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 
 	for _, child := range childrenSlice {
 		setNewChildIndexes := copySet(children)
-		eval, _ := NegaScout(State{child.PlayBoard, child.Index, 0}, depth-1, -alpha, -beta, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
+		eval, _ := NegaScout(State{child.PlayBoard, child.Index, 0}, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
+		//eval, _ := NegaScout(State{child.PlayBoard, child.Index, 0}, depth-1, -alpha, -beta, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
 
 		eval = -eval
 		if eval >= maxEval { //because both values are -inf eval >= maxEval
@@ -299,6 +300,9 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 		alpha = math.Max(alpha, eval)
 
 		if alpha >= beta {
+			break
+		}
+		if eval == float64(multiplier)*math.Inf(1) { //if win
 			break
 		}
 	}
