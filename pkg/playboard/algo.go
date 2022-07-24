@@ -137,16 +137,15 @@ func getIndexes(children []Child) intSet {
 	setNewChildIndexes := make(intSet)
 
 	for _, child := range children {
-		setNewChildIndexes[child.Index] = member
+		setNewChildIndexes[child.State.index] = member
 	}
 
 	return setNewChildIndexes
 }
 
 type Child struct {
-	Index     int
-	Value     float64
-	PlayBoard string
+	Value float64
+	State State
 }
 
 const numChildren = 7
@@ -161,8 +160,8 @@ func cutChildren(children []State, transpositions stringSet) []Child {
 			continue
 		}
 		transpositions[childState.Node] = member
-		h := Heuristic(State{childState.Node, childState.index, 0}, "")
-		new_ = append(new_, Child{childState.index, h, childState.Node})
+		h := Heuristic(State{childState.Node, childState.index, childState.captures}, "")
+		new_ = append(new_, Child{h, State{childState.Node, childState.index, childState.captures}})
 
 	}
 
@@ -288,13 +287,13 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 
 	for _, child := range childrenSlice {
 		setNewChildIndexes := copySet(children)
-		eval, _ := NegaScout(State{child.PlayBoard, child.Index, 0}, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
+		eval, _ := NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
 		//eval, _ := NegaScout(State{child.PlayBoard, child.Index, 0}, depth-1, -alpha, -beta, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions, allIndexesPath)
 
 		eval = -eval
 		if eval >= maxEval { //because both values are -inf eval >= maxEval
 			maxEval = eval
-			maxIndex = child.Index
+			maxIndex = child.State.index
 		}
 
 		alpha = math.Max(alpha, eval)
