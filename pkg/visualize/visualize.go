@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"gomoku/pkg/playboard"
 	"image/color"
 	_ "image/jpeg"
@@ -17,7 +18,7 @@ import (
 const (
 	width = 12
 	lines = 19
-	start = 10
+	start = 30
 )
 
 type GameInterface interface {
@@ -72,7 +73,7 @@ func init() {
 
 func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
 	mx, my := ebiten.CursorPosition()
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		mx, my = int(math.Round(float64(mx-start)/width)), int(math.Round(float64(my-start)/width))
 		index := my*playboard.N + mx
 		//fmt.Println("HERE X Y !", mx, my, index)
