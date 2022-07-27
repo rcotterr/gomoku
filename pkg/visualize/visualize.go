@@ -149,7 +149,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 	if g.currentPlayer.Symbol == playboard.SymbolPlayer1 || g.currentPlayer.Symbol == playboard.SymbolPlayer2 {
-		ebitenutil.DebugPrint(screen, fmt.Sprintf("Turn player (%s)", g.currentPlayer.Symbol))
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Turn player (%s)", g.currentPlayer.Symbol), 300, 100)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.currentPlayer.Symbol, g.currentPlayer.Captures), 300, 150)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), 300, 200)
 	}
 
 	//fmt.Println("test draw", time.Now())
