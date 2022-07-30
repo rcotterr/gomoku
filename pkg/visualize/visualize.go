@@ -25,6 +25,7 @@ type GameInterface interface {
 	Update() error
 	Draw(screen *ebiten.Image)
 	Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
+	GetPlayBoard() string
 }
 
 type MockGame struct{}
@@ -48,6 +49,8 @@ type HumanGame struct {
 	isOver        bool
 }
 
+func (g HumanGame) GetPlayBoard() string { return g.playBoard }
+
 type AIGame struct {
 	//screen *ebiten.Image
 	playBoard     string
@@ -56,6 +59,8 @@ type AIGame struct {
 	index         int
 	isOver        bool
 }
+
+func (g AIGame) GetPlayBoard() string { return g.playBoard }
 
 const (
 	screenWidth  = 1280
@@ -148,7 +153,7 @@ func (g *AIGame) Update() error {
 	return nil
 }
 
-func _draw(screen *ebiten.Image, g *HumanGame) {
+func _draw(screen *ebiten.Image, g GameInterface) {
 	screen.Fill(color.NRGBA{R: 222, G: 184, B: 135, A: 255})
 	gridColor64 := &color.RGBA{A: 50}
 
@@ -167,7 +172,7 @@ func _draw(screen *ebiten.Image, g *HumanGame) {
 	}
 	yStart = start
 
-	for index, stone := range g.playBoard {
+	for index, stone := range g.GetPlayBoard() {
 		if string(stone) != playboard.EmptySymbol {
 			op := &ebiten.DrawImageOptions{}
 			mx, my := index%playboard.N, index/playboard.N
@@ -182,11 +187,11 @@ func _draw(screen *ebiten.Image, g *HumanGame) {
 			}
 		}
 	}
-	if g.currentPlayer.Symbol == playboard.SymbolPlayer1 || g.currentPlayer.Symbol == playboard.SymbolPlayer2 {
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Turn player (%s)", g.currentPlayer.Symbol), 300, 100)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.currentPlayer.Symbol, g.currentPlayer.Captures), 300, 150)
-		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), 300, 200)
-	}
+	//if g.currentPlayer.Symbol == playboard.SymbolPlayer1 || g.currentPlayer.Symbol == playboard.SymbolPlayer2 {
+	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Turn player (%s)", g.currentPlayer.Symbol), 300, 100)
+	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.currentPlayer.Symbol, g.currentPlayer.Captures), 300, 150)
+	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), 300, 200)
+	//}
 }
 
 // Draw draws the game screen.
@@ -198,7 +203,7 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 // Draw draws the game screen.
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *AIGame) Draw(screen *ebiten.Image) {
-	//_draw(screen, HumanGame)
+	_draw(screen, g)
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
