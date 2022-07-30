@@ -4,7 +4,11 @@ import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 	"gomoku/pkg/playboard"
 	"image/color"
 	_ "image/jpeg"
@@ -26,6 +30,7 @@ type GameInterface interface {
 	Draw(screen *ebiten.Image)
 	Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
 	GetPlayBoard() string
+	GetTurns() int
 }
 
 type MockGame struct{}
@@ -47,9 +52,11 @@ type HumanGame struct {
 	anotherPlayer *playboard.Player
 	index         int
 	isOver        bool
+	turns         int
 }
 
 func (g HumanGame) GetPlayBoard() string { return g.playBoard }
+func (g HumanGame) GetTurns() int        { return g.turns }
 
 type AIGame struct {
 	//screen *ebiten.Image
@@ -59,9 +66,11 @@ type AIGame struct {
 	machineTurn   bool
 	index         int
 	isOver        bool
+	turns         int
 }
 
 func (g AIGame) GetPlayBoard() string { return g.playBoard }
+func (g AIGame) GetTurns() int        { return g.turns }
 
 const (
 	screenWidth  = 1280
@@ -72,6 +81,8 @@ var _ = ebiten.NewImage(screenWidth, screenHeight)
 
 var WhiteStone *ebiten.Image
 var BlackStone *ebiten.Image
+
+var normalFont font.Face
 
 func init() {
 	var err error
@@ -84,6 +95,21 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
+	if err != nil {
+		log.Fatal(err)
+	}
+	const dpi = 72
+	normalFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    12,
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
@@ -119,6 +145,7 @@ func (g *HumanGame) Update() error {
 		//g.currentPlayer.Captures += newPlayBoard.Captures // its in PutStone
 		playboard.PrintPlayBoard(g.playBoard)
 		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
+		g.turns += 1
 	} else {
 		g.isOver = true
 	}
@@ -142,6 +169,7 @@ func (g *AIGame) Update() error {
 			g.playBoard = newPlayBoard.Node
 			playboard.PrintPlayBoard(g.playBoard) //TO DO delete print
 			g.machineTurn = false
+			g.turns += 1
 		} else {
 			newIndex, err := HumanTurnVis(*g.humanPlayer)
 			if err != nil {
@@ -156,6 +184,7 @@ func (g *AIGame) Update() error {
 			g.index = newIndex
 			playboard.PrintPlayBoard(g.playBoard)
 			g.machineTurn = true
+			g.turns += 1
 		}
 	} else {
 		g.isOver = true
@@ -199,23 +228,37 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 			}
 		}
 	}
+
+	// Draw info
+	//msg := fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS())
+	text.Draw(screen, fmt.Sprintf("Turns: %d", g.GetTurns()), normalFont, 300, 60, color.Black)
+
+	// Draw the sample text
+	//sampleText := fmt.Sprintf("AI timer : %s", time.Duration(3))
+	//text.Draw(screen, sampleText, normalFont, 300, 80, color.Black)
 	//if g.currentPlayer.Symbol == playboard.SymbolPlayer1 || g.currentPlayer.Symbol == playboard.SymbolPlayer2 {
 	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Turn player (%s)", g.currentPlayer.Symbol), 300, 100)
 	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.currentPlayer.Symbol, g.currentPlayer.Captures), 300, 150)
 	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), 300, 200)
 	//}
+	//TO DO timer
 }
 
 // Draw draws the game screen.
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *HumanGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
+
 }
 
 // Draw draws the game screen.
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *AIGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
+	startX := 300
+	startY := 80
+	text.Draw(screen, fmt.Sprintf("AI timer : %s", time.Duration(3)), normalFont, startX, startY, color.Black)
+	startY += 20
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
@@ -239,6 +282,7 @@ func NewHumanGame() GameInterface {
 		anotherPlayer: &playboard.Player2,
 		index:         -1,
 		isOver:        false,
+		turns:         0,
 	}
 	return game
 }
@@ -251,6 +295,7 @@ func NewAIGame() GameInterface {
 		index:         -1,
 		isOver:        false,
 		machineTurn:   true,
+		turns:         0,
 	}
 	return game
 }
