@@ -39,7 +39,7 @@ func (g *MockGame) Layout(_, _ int) (_, _ int) {
 	return 0, 0
 }
 
-type Game struct {
+type HumanGame struct {
 	//screen *ebiten.Image
 	playBoard     string
 	currentPlayer *playboard.Player
@@ -87,7 +87,7 @@ func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
 
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
-func (g *Game) Update() error {
+func (g *HumanGame) Update() error {
 
 	if !g.isOver && !playboard.GameOver(g.playBoard, g.currentPlayer, g.anotherPlayer, g.index) {
 		newIndex, err := HumanTurnVis(*g.currentPlayer)
@@ -112,9 +112,7 @@ func (g *Game) Update() error {
 	return nil
 }
 
-// Draw draws the game screen.
-// Draw is called every frame (typically 1/60[s] for 60Hz display).
-func (g *Game) Draw(screen *ebiten.Image) {
+func _draw(screen *ebiten.Image, g *HumanGame) {
 	screen.Fill(color.NRGBA{R: 222, G: 184, B: 135, A: 255})
 	gridColor64 := &color.RGBA{A: 50}
 
@@ -153,19 +151,23 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.currentPlayer.Symbol, g.currentPlayer.Captures), 300, 150)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), 300, 200)
 	}
+}
 
-	//fmt.Println("test draw", time.Now())
+// Draw draws the game screen.
+// Draw is called every frame (typically 1/60[s] for 60Hz display).
+func (g *HumanGame) Draw(screen *ebiten.Image) {
+	_draw(screen, g)
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
 // If you don't have to adjust the screen size with the outside size, just return a fixed size.
-func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+func (g *HumanGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return 640, 360
 	//return screenWidth/2, screenHeight/2
 }
 
-func NewGame() GameInterface {
-	game := &Game{
+func NewHumanGame() GameInterface {
+	game := &HumanGame{
 		playBoard:     strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
 		currentPlayer: &playboard.Player1,
 		anotherPlayer: &playboard.Player2,

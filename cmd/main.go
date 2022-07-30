@@ -10,9 +10,9 @@ func main() {
 	Human := flag.Bool("human", false, "Play against another human player")
 	flag.Parse()
 
+	//var game visualize.GameInterface
 	if *Human {
-		//var game visualize.GameInterface
-		//game = visualize.NewGame()
+		//game = visualize.NewHumanGame()
 		//visualize.Vis(game)
 	} else {
 		play.AIPlay()
