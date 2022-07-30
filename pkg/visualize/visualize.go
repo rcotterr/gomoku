@@ -54,8 +54,9 @@ func (g HumanGame) GetPlayBoard() string { return g.playBoard }
 type AIGame struct {
 	//screen *ebiten.Image
 	playBoard     string
-	currentPlayer *playboard.Player
-	anotherPlayer *playboard.Player
+	humanPlayer   *playboard.Player
+	machinePlayer *playboard.Player
+	machineTurn   bool
 	index         int
 	isOver        bool
 }
@@ -115,7 +116,7 @@ func (g *HumanGame) Update() error {
 		}
 		g.playBoard = newPlayBoard.Node
 		g.index = newIndex
-		g.currentPlayer.Captures += newPlayBoard.Captures
+		//g.currentPlayer.Captures += newPlayBoard.Captures // its in PutStone
 		playboard.PrintPlayBoard(g.playBoard)
 		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
 	} else {
@@ -130,21 +131,32 @@ func (g *HumanGame) Update() error {
 // Update is called every tick (1/60 [s] by default).
 func (g *AIGame) Update() error {
 
-	if !g.isOver && !playboard.GameOver(g.playBoard, g.currentPlayer, g.anotherPlayer, g.index) {
-		newIndex, err := HumanTurnVis(*g.currentPlayer)
-		if err != nil {
-			return nil
+	if !g.isOver && !playboard.GameOver(g.playBoard, g.machinePlayer, g.humanPlayer, g.index) {
+		if g.machineTurn {
+			g.index = playboard.Algo(g.playBoard, *g.machinePlayer, *g.humanPlayer)
+			newPlayBoard, err := playboard.PutStone(g.playBoard, g.index, g.machinePlayer)
+			if err != nil {
+				fmt.Println("Invalid machine algo!!!!!", err)
+				log.Fatal()
+			}
+			g.playBoard = newPlayBoard.Node
+			playboard.PrintPlayBoard(g.playBoard) //TO DO delete print
+			g.machineTurn = false
+		} else {
+			newIndex, err := HumanTurnVis(*g.humanPlayer)
+			if err != nil {
+				return nil
+			}
+			newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.humanPlayer)
+			if err != nil {
+				fmt.Println(err)
+				return nil
+			}
+			g.playBoard = newPlayBoard.Node
+			g.index = newIndex
+			playboard.PrintPlayBoard(g.playBoard)
+			g.machineTurn = true
 		}
-		newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.currentPlayer)
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-		g.playBoard = newPlayBoard.Node
-		g.index = newIndex
-		g.currentPlayer.Captures += newPlayBoard.Captures
-		playboard.PrintPlayBoard(g.playBoard)
-		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
 	} else {
 		g.isOver = true
 	}
@@ -234,10 +246,11 @@ func NewHumanGame() GameInterface {
 func NewAIGame() GameInterface {
 	game := &AIGame{
 		playBoard:     strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
-		currentPlayer: &playboard.Player1,
-		anotherPlayer: &playboard.Player2,
+		humanPlayer:   &playboard.Player2,
+		machinePlayer: &playboard.MachinePlayer,
 		index:         -1,
 		isOver:        false,
+		machineTurn:   true,
 	}
 	return game
 }
