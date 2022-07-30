@@ -48,6 +48,15 @@ type HumanGame struct {
 	isOver        bool
 }
 
+type AIGame struct {
+	//screen *ebiten.Image
+	playBoard     string
+	currentPlayer *playboard.Player
+	anotherPlayer *playboard.Player
+	index         int
+	isOver        bool
+}
+
 const (
 	screenWidth  = 1280
 	screenHeight = 720
@@ -88,6 +97,33 @@ func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
 func (g *HumanGame) Update() error {
+
+	if !g.isOver && !playboard.GameOver(g.playBoard, g.currentPlayer, g.anotherPlayer, g.index) {
+		newIndex, err := HumanTurnVis(*g.currentPlayer)
+		if err != nil {
+			return nil
+		}
+		newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.currentPlayer)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+		g.playBoard = newPlayBoard.Node
+		g.index = newIndex
+		g.currentPlayer.Captures += newPlayBoard.Captures
+		playboard.PrintPlayBoard(g.playBoard)
+		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
+	} else {
+		g.isOver = true
+	}
+	fmt.Println("test update", time.Now())
+
+	return nil
+}
+
+// Update proceeds the game state.
+// Update is called every tick (1/60 [s] by default).
+func (g *AIGame) Update() error {
 
 	if !g.isOver && !playboard.GameOver(g.playBoard, g.currentPlayer, g.anotherPlayer, g.index) {
 		newIndex, err := HumanTurnVis(*g.currentPlayer)
@@ -159,9 +195,22 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
 }
 
+// Draw draws the game screen.
+// Draw is called every frame (typically 1/60[s] for 60Hz display).
+func (g *AIGame) Draw(screen *ebiten.Image) {
+	//_draw(screen, HumanGame)
+}
+
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
 // If you don't have to adjust the screen size with the outside size, just return a fixed size.
 func (g *HumanGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return 640, 360
+	//return screenWidth/2, screenHeight/2
+}
+
+// Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
+// If you don't have to adjust the screen size with the outside size, just return a fixed size.
+func (g *AIGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return 640, 360
 	//return screenWidth/2, screenHeight/2
 }
@@ -177,12 +226,22 @@ func NewHumanGame() GameInterface {
 	return game
 }
 
-func Vis(game GameInterface) error {
+func NewAIGame() GameInterface {
+	game := &AIGame{
+		playBoard:     strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
+		currentPlayer: &playboard.Player1,
+		anotherPlayer: &playboard.Player2,
+		index:         -1,
+		isOver:        false,
+	}
+	return game
+}
+
+func Vis(game GameInterface) {
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Gomoku")
 	if err := ebiten.RunGame(game); err != nil {
-		return err
+		log.Fatal()
 	}
-	return nil
 }

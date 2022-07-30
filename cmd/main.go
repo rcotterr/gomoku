@@ -2,22 +2,20 @@ package main
 
 import (
 	"flag"
-	"gomoku/pkg/play"
-	//"gomoku/pkg/visualize"
+	"gomoku/pkg/visualize"
 )
 
 func main() {
 	Human := flag.Bool("human", false, "Play against another human player")
 	flag.Parse()
 
-	//var game visualize.GameInterface
+	var game visualize.GameInterface
 	if *Human {
-		//game = visualize.NewHumanGame()
-		//visualize.Vis(game)
+		game = visualize.NewHumanGame()
 	} else {
-		play.AIPlay()
+		game = visualize.NewAIGame()
 	}
-
+	visualize.Vis(game)
 }
 
 //Possible optimizations from aromny-w:
