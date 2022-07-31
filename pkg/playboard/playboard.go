@@ -266,16 +266,50 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, error)
 	return State{newPlayBoard, index, numCaptures}, nil //TO DO return not always 0 captures
 }
 
+func PossibleCapturedStone(node string, index int, stepCount int, symbol string) int {
+	setRules := map[int]ConditionFn{
+		1:      ConditionHorizontal,
+		N:      ConditionVertical,
+		N + 1:  ConditionBackDiagonal,
+		N - 1:  ConditionForwardDiagonal,
+		-1:     ConditionHorizontal,
+		-N:     ConditionVertical,
+		-N - 1: ConditionBackDiagonal,
+		-N + 1: ConditionForwardDiagonal,
+	}
+
+	for step, condition := range setRules {
+		if step != stepCount {
+			indexNeigh := index + step
+			if condition(indexNeigh, index) && indexNeigh >= 0 && indexNeigh < N*N && string(node[indexNeigh]) == symbol {
+				indexNextAfterNeigh := index + step*2
+				indexNeighAnother := index - step
+				if condition(indexNextAfterNeigh, index) && indexNextAfterNeigh >= 0 && indexNextAfterNeigh < N*N &&
+					condition(indexNeighAnother, index) && indexNeighAnother >= 0 && indexNeighAnother < N*N {
+					symbolNextAfterNeigh := string(node[indexNextAfterNeigh])
+					symbolNeighAnother := string(node[indexNeighAnother])
+					if symbolNextAfterNeigh != symbol && symbolNeighAnother != symbol && symbolNextAfterNeigh != symbolNeighAnother { //both symbolNextAfterNeigh and symbolNeighAnother are [anotherPlayerSymbol, .]
+						return 1
+					}
+				}
+
+			}
+		}
+	}
+	return 0
+}
+
 func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {
 
 	empty := 0
+	posibleCaptures := 0
 
-	hreny := node[index:]
-	hreny = string(hreny)
 	startIndex := index
+	posibleCaptures += PossibleCapturedStone(node, index, step, symbol)
 	for tmpIndex := index - step; tmpIndex >= 0 && tmpIndex > index-(step*5); tmpIndex -= step {
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			startIndex = tmpIndex
+			posibleCaptures += PossibleCapturedStone(node, index, step, symbol)
 		} else {
 			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
@@ -288,6 +322,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 	for tmpIndex := index + step; tmpIndex < N*N && tmpIndex < index+(step*5); tmpIndex += step {
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			endIndex = tmpIndex
+			posibleCaptures += PossibleCapturedStone(node, index, step, symbol)
 		} else {
 			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
