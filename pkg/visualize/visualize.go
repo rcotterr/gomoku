@@ -231,7 +231,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 
 	// Draw info
 	//msg := fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS())
-	text.Draw(screen, fmt.Sprintf("Turns: %d", g.GetTurns()), normalFont, 300, 60, color.Black)
+	text.Draw(screen, fmt.Sprintf("Turns: %d", g.GetTurns()), normalFont, 300, 80, color.Black)
 
 	// Draw the sample text
 	//sampleText := fmt.Sprintf("AI timer : %s", time.Duration(3))
@@ -248,7 +248,15 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *HumanGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
-
+	text.Draw(screen, fmt.Sprintf("Turn to play for Player: %s", g.currentPlayer.Symbol), normalFont, 300, 60, color.Black)
+	var y1, y2 int
+	if g.currentPlayer.Symbol == playboard.SymbolPlayer1 {
+		y1, y2 = 100, 120
+	} else {
+		y1, y2 = 120, 100
+	}
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.currentPlayer.Symbol, g.currentPlayer.Captures), normalFont, 300, y1, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), normalFont, 300, y2, color.Black)
 }
 
 // Draw draws the game screen.
@@ -256,9 +264,12 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 func (g *AIGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
 	startX := 300
-	startY := 80
+	startY := 60
 	text.Draw(screen, fmt.Sprintf("AI timer : %s", time.Duration(3)), normalFont, startX, startY, color.Black)
 	startY += 20
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 100, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 120, color.Black)
+
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
