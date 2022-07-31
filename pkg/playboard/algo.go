@@ -28,8 +28,9 @@ var setRulesChildren = map[int]ConditionFn{
 	-N + 1: ConditionForwardDiagonal,
 }
 
-func Heuristic(state State, symbol string) float64 {
+func Heuristic(state State, symbol string, captures int) float64 {
 	defer TimeTrack(time.Now(), "Heuristic", RunTimesHeuristic, AllTimesHeuristic)
+	vulnerable := false
 	num := 0.0
 
 	//count по каждой стороне
@@ -48,22 +49,23 @@ func Heuristic(state State, symbol string) float64 {
 
 	for step, condition := range setRules {
 		count, halfFree, free := CountInRow(state.Node, state.index, step, condition, symbol)
-		if count >= 5 { // TO DO and not capture
+		if count >= 5 || captures >= 5 { // TO DO and not capture
 			//num = 1000000000
 			//break
 			return math.Inf(1)
 		} else if count == 4 && free {
-			num += 10000000
+			//num += 10000000
+			return math.Inf(1)
 		} else if count == 4 && halfFree {
-			num += 1000000
-		} else if count == 3 && free { //TO DO free more than one step
 			num += 100000
-		} else if count == 3 && halfFree {
+		} else if count == 3 && free { //TO DO free more than one step
 			num += 10000
-		} else if count == 2 && free {
+		} else if count == 3 && halfFree {
 			num += 1000
-		} else if count == 2 && halfFree {
+		} else if count == 2 && free {
 			num += 100
+		} else if count == 2 && halfFree {
+			vulnerable = true
 		} else if count == 1 && free {
 			num += 10
 		} else if count == 1 && halfFree {
@@ -72,7 +74,10 @@ func Heuristic(state State, symbol string) float64 {
 
 	}
 
-	num += float64(10000000 * state.captures)
+	num += float64(1000000 * state.Captures)
+	if vulnerable == true {
+		num -= 1000000
+	}
 
 	return num
 }
@@ -148,9 +153,25 @@ type Child struct {
 	State State
 }
 
-const numChildren = 7
+const numChildren = 3
 
-func cutChildren(children []State, transpositions stringSet) []Child {
+func getHeuristic(state State, captures int, multiplier int) float64 {
+	var h1, h2 float64
+
+	if string(state.Node[state.index]) == string('M') {
+		h1 = Heuristic(state, string('M'), captures)
+		state.Node = strings.Join([]string{state.Node[:state.index], string('0'), state.Node[state.index+1:]}, "")
+		h2 = Heuristic(state, string('0'), captures)
+	} else {
+		h2 = Heuristic(state, string('0'), captures)
+		state.Node = strings.Join([]string{state.Node[:state.index], string('M'), state.Node[state.index+1:]}, "")
+		h1 = Heuristic(state, string('M'), captures)
+	}
+
+	return float64(multiplier) * (h1 + h2)
+}
+
+func cutChildren(children []State, transpositions stringSet, captures int, multiplier int) []Child {
 
 	var new_ []Child
 	for _, childState := range children {
@@ -160,17 +181,24 @@ func cutChildren(children []State, transpositions stringSet) []Child {
 			continue
 		}
 		transpositions[childState.Node] = member
-		h := Heuristic(State{childState.Node, childState.index, childState.captures}, "")
-		new_ = append(new_, Child{h, State{childState.Node, childState.index, childState.captures}})
+		h := -getHeuristic(State{childState.Node, childState.index, childState.Captures}, captures, -multiplier)
+		new_ = append(new_, Child{h, State{childState.Node, childState.index, childState.Captures}})
 
 	}
 
 	sort.Slice(new_, func(i, j int) bool {
 		return new_[i].Value > new_[j].Value
 	})
-	//if len(new_) > numChildren {
-	//	new_ = new_[:numChildren]
-	//}
+
+	for i := range children {
+		if i+1 < len(new_) {
+			if new_[i].Value > new_[i+1].Value {
+				return new_[:i+1]
+			}
+		} else {
+			break
+		}
+	}
 
 	return new_
 }
@@ -250,7 +278,7 @@ func cutChildren(children []State, transpositions stringSet) []Child {
 type State struct {
 	Node     string
 	index    int
-	captures int
+	Captures int
 }
 
 func NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer Player, humanPlayer Player, childIndexesSet intSet, transpositions stringSet, allIndexesPath string) (float64, int) {
@@ -259,31 +287,31 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 		var h1, h2 float64
 
 		if string(state.Node[state.index]) == machinePlayer.Symbol {
-			h1 = Heuristic(state, machinePlayer.Symbol)
+			h1 = Heuristic(state, machinePlayer.Symbol, machinePlayer.Captures)
 			state.Node = strings.Join([]string{state.Node[:state.index], humanPlayer.Symbol, state.Node[state.index+1:]}, "")
-			h2 = Heuristic(state, humanPlayer.Symbol)
+			h2 = Heuristic(state, humanPlayer.Symbol, humanPlayer.Captures)
 		} else {
-			h2 = Heuristic(state, humanPlayer.Symbol)
+			h2 = Heuristic(state, humanPlayer.Symbol, humanPlayer.Captures)
 			state.Node = strings.Join([]string{state.Node[:state.index], machinePlayer.Symbol, state.Node[state.index+1:]}, "")
-			h1 = Heuristic(state, machinePlayer.Symbol)
+			h1 = Heuristic(state, machinePlayer.Symbol, machinePlayer.Captures)
 		}
 
-		if h1 == math.Inf(1) {
-			// println("hi");
-		}
-
-		return float64(multiplier) * (h1 - h2), state.index
+		return float64(multiplier) * (h1 + h2), state.index
 	}
 
 	maxEval := math.Inf(-1)
 	maxIndex := -1
 	var children []State
+	var childrenSlice []Child
+
 	if multiplier == 1 {
 		children = getChildren(state.Node, state.index, machinePlayer, childIndexesSet)
+		childrenSlice = cutChildren(children, transpositions, machinePlayer.Captures, multiplier)
 	} else {
 		children = getChildren(state.Node, state.index, humanPlayer, childIndexesSet)
+		childrenSlice = cutChildren(children, transpositions, humanPlayer.Captures, multiplier)
 	}
-	childrenSlice := cutChildren(children, transpositions)
+	//childrenSlice = cutChildren(children, transpositions, multiplier)
 
 	for _, child := range childrenSlice {
 		setNewChildIndexes := copySet(children)
@@ -301,15 +329,16 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 		if alpha >= beta {
 			break
 		}
-		if eval == float64(multiplier)*math.Inf(1) { //if win
-			break
-		}
+		//if eval == float64(multiplier)*math.Inf(1) { //if win
+		//	break
+		//}
 	}
 
 	return maxEval, maxIndex
 }
 
 func Algo(playBoard string, machinePlayer Player, humanPlayer Player) int {
+	defer TimeTrackPrint(time.Now(), fmt.Sprintf("Algo "))
 	if RunTimesHeuristic != nil {
 		*RunTimesHeuristic = 0
 		*RunTimesIsOver = 0

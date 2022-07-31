@@ -221,7 +221,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 			//fmt.Println(mx, my)
 			op.GeoM.Translate(float64(mx-widthStone/2), float64(my-widthStone/2))
 
-			if string(stone) != playboard.SymbolPlayer2 {
+			if string(stone) != playboard.SymbolPlayer1 {
 				screen.DrawImage(WhiteStone, op)
 			} else {
 				screen.DrawImage(BlackStone, op)
@@ -301,7 +301,7 @@ func NewHumanGame() GameInterface {
 func NewAIGame() GameInterface {
 	game := &AIGame{
 		playBoard:     strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
-		humanPlayer:   &playboard.Player2,
+		humanPlayer:   &playboard.Player1,
 		machinePlayer: &playboard.MachinePlayer,
 		index:         -1,
 		isOver:        false,

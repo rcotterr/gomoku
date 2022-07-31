@@ -70,6 +70,7 @@ func AIPlay() {
 			playBoard = newPlayBoard.Node
 			playboard.PrintPlayBoard(playBoard)
 			machineTurn = false
+			fmt.Println("machinePlayer.Captures", machinePlayer.Captures)
 		} else {
 			newIndex, err = HumanTurn(reader, humanPlayer)
 			if err != nil {
@@ -85,6 +86,7 @@ func AIPlay() {
 			index = newIndex
 			playboard.PrintPlayBoard(playBoard)
 			machineTurn = true
+			fmt.Println("humanPlayer.Captures", humanPlayer.Captures)
 		}
 	}
 }

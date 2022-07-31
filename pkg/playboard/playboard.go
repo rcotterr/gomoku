@@ -33,6 +33,11 @@ func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Durati
 	}
 }
 
+func TimeTrackPrint(start time.Time, name string) {
+	elapsed := time.Since(start)
+	fmt.Println(File, "%s took %s\n", name, elapsed)
+}
+
 const N = 19
 const EmptySymbol = "."
 const lenPositions = 2
