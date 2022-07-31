@@ -299,17 +299,17 @@ func PossibleCapturedStone(node string, index int, stepCount int, symbol string)
 	return 0
 }
 
-func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool) {
+func CountInRow(node string, index int, step int, condition ConditionFn, symbol string) (int, bool, bool, int) {
 
 	empty := 0
-	posibleCaptures := 0
+	possibleCaptures := 0
 
 	startIndex := index
-	posibleCaptures += PossibleCapturedStone(node, index, step, symbol)
+	possibleCaptures += PossibleCapturedStone(node, index, step, symbol)
 	for tmpIndex := index - step; tmpIndex >= 0 && tmpIndex > index-(step*5); tmpIndex -= step {
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			startIndex = tmpIndex
-			posibleCaptures += PossibleCapturedStone(node, index, step, symbol)
+			possibleCaptures += PossibleCapturedStone(node, startIndex, step, symbol)
 		} else {
 			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
@@ -322,7 +322,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 	for tmpIndex := index + step; tmpIndex < N*N && tmpIndex < index+(step*5); tmpIndex += step {
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			endIndex = tmpIndex
-			posibleCaptures += PossibleCapturedStone(node, index, step, symbol)
+			possibleCaptures += PossibleCapturedStone(node, endIndex, step, symbol)
 		} else {
 			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
@@ -333,7 +333,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 
 	count := ((endIndex - startIndex) / step) + 1
 
-	return count, empty == 1, empty == 2
+	return count, empty == 1, empty == 2, possibleCaptures
 
 }
 
@@ -347,8 +347,8 @@ func checkFive(playBoard string, index int, symbol string) bool {
 	}
 
 	for step, condition := range setRules {
-		count, _, _ := CountInRow(playBoard, index, step, condition, symbol)
-		if count >= 5 { // TO DO and not capture
+		count, _, _, possibleCaptured := CountInRow(playBoard, index, step, condition, symbol)
+		if count >= 5 && possibleCaptured == 0 { // TO DO and not capture
 			return true
 		}
 	}

@@ -48,7 +48,7 @@ func Heuristic(state State, symbol string, captures int) float64 {
 	}
 
 	for step, condition := range setRules {
-		count, halfFree, free := CountInRow(state.Node, state.index, step, condition, symbol)
+		count, halfFree, free, _ := CountInRow(state.Node, state.index, step, condition, symbol)
 		if count >= 5 || captures >= 5 { // TO DO and not capture
 			//num = 1000000000
 			//break
