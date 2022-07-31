@@ -265,7 +265,7 @@ func (g *AIGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
 	startX := 300
 	startY := 60
-	text.Draw(screen, fmt.Sprintf("AI timer : %s", time.Duration(3)), normalFont, startX, startY, color.Black)
+	text.Draw(screen, fmt.Sprintf("AI timer : %s", playboard.AITimer), normalFont, startX, startY, color.Black)
 	startY += 20
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 100, color.Black)
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 120, color.Black)

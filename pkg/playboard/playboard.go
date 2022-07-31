@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var AITimer time.Duration
+
 var File *os.File
 
 var RunTimesHeuristic *int
@@ -35,6 +37,7 @@ func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Durati
 
 func TimeTrackPrint(start time.Time, name string) {
 	elapsed := time.Since(start)
+	AITimer = elapsed
 	fmt.Println(File, "%s took %s\n", name, elapsed)
 }
 
