@@ -4,12 +4,13 @@ go 1.17
 
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.3.6
+	github.com/openlyinc/pointy v1.1.2
 	github.com/stretchr/testify v1.7.2
 	golang.org/x/image v0.0.0-20220321031419-a8550c1d254a
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220320163800-277f93cfa958 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/jezek/xgb v1.0.0 // indirect

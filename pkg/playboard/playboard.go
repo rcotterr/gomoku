@@ -53,8 +53,9 @@ const nextFromCapturedStone = numOfCaptureStone + 1
 const numOfCheckFreeThree = 3
 
 type Player struct {
-	Captures int
-	Symbol   string
+	Captures       int
+	Symbol         string
+	IndexAlmostWin *int
 }
 
 var Player1 = Player{Captures: 0, Symbol: SymbolPlayer1}
@@ -337,7 +338,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 
 }
 
-func checkFive(playBoard string, index int, symbol string) bool {
+func checkFive(playBoard string, index int, symbol string) (bool, int) {
 
 	setRules := map[int]ConditionFn{
 		1:     ConditionHorizontal,
@@ -348,12 +349,12 @@ func checkFive(playBoard string, index int, symbol string) bool {
 
 	for step, condition := range setRules {
 		count, _, _, possibleCaptured := CountInRow(playBoard, index, step, condition, symbol)
-		if count >= 5 && possibleCaptured == 0 { // TO DO and not capture
-			return true
+		if count >= 5 {
+			return true, possibleCaptured
 		}
 	}
 
-	return false
+	return false, 0
 	//TO DO add possibleCapture than not win
 	// 6 stones and capture only in 6
 }
@@ -373,9 +374,28 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 	//if string(playBoard[index]) == EmptySymbol {
 	//	return false
 	//}
+	symbolCurrentPlayer := string(playBoard[index])
+	var currentPlayer, anotherPlayer *Player
+	if player1.Symbol == symbolCurrentPlayer {
+		currentPlayer, anotherPlayer = player1, player2
+	} else if player2.Symbol == symbolCurrentPlayer {
+		currentPlayer, anotherPlayer = player2, player1
+	}
 
-	if checkFive(playBoard, index, string(playBoard[index])) {
-		return true
+	if anotherPlayer.IndexAlmostWin != nil {
+		if isFive, _ := checkFive(playBoard, *anotherPlayer.IndexAlmostWin, anotherPlayer.Symbol); isFive {
+			return true // another player, not current win!
+		} else {
+			anotherPlayer.IndexAlmostWin = nil
+		}
+	}
+
+	if isFive, possibleCaptured := checkFive(playBoard, index, symbolCurrentPlayer); isFive {
+		if possibleCaptured != 0 {
+			currentPlayer.IndexAlmostWin = &index
+		} else {
+			return true
+		}
 	}
 
 	if containEmpty := strings.Contains(playBoard, EmptySymbol); !containEmpty {

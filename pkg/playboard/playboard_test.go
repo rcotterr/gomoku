@@ -3,6 +3,7 @@ package playboard
 import (
 	"testing"
 
+	"github.com/openlyinc/pointy"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -229,8 +230,8 @@ func TestGameOver(t *testing.T) {
 				"...................",
 			expectedIsOver: true,
 			index:          0,
-			player1:        &Player{0, SymbolPlayer1},
-			player2:        &Player{5, SymbolPlayer2},
+			player1:        &Player{Captures: 0, Symbol: SymbolPlayer1},
+			player2:        &Player{Captures: 5, Symbol: SymbolPlayer2},
 		},
 		{
 			name: "is over by captures",
@@ -255,8 +256,8 @@ func TestGameOver(t *testing.T) {
 				"...................",
 			expectedIsOver: true,
 			index:          0,
-			player1:        &Player{5, SymbolPlayer1},
-			player2:        &Player{0, SymbolPlayer2},
+			player1:        &Player{Captures: 5, Symbol: SymbolPlayer1},
+			player2:        &Player{Captures: 0, Symbol: SymbolPlayer2},
 		},
 		{
 			name: "is over by no space left",
@@ -328,6 +329,34 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"...................",
 			index:          159,
+			expectedIsOver: false,
+			player1:        &Player{Symbol: SymbolPlayer1},
+			player2:        &Player{Symbol: SymbolPlayerMachine},
+		},
+		{
+			name: "is not over second time 5-in-row",
+			playboard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"......0............" +
+				".......M.0........." +
+				"......0MMM0........" +
+				".......M.M0........" +
+				"........MMM........" +
+				".......M.M.0M......" +
+				"......0..0M........" +
+				"......M....M......." +
+				"............0......" +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:          139,
+			player1:        &Player{Symbol: SymbolPlayer1},
+			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(159)},
 			expectedIsOver: true,
 		},
 	}
@@ -335,6 +364,9 @@ func TestGameOver(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
+			if tc.player1 == nil && tc.player2 == nil {
+				tc.player1, tc.player2 = &Player{Symbol: SymbolPlayer1}, &Player{Symbol: SymbolPlayer2}
+			}
 			isOver := GameOver(tc.playboard, tc.player1, tc.player2, tc.index)
 
 			assert.Equal(t, tc.expectedIsOver, isOver)
@@ -731,7 +763,7 @@ func TestPutStone(t *testing.T) {
 				"..................." +
 				"...................",
 			pos:           &Pos{0, 0},
-			currentPlayer: Player{0, SymbolPlayer1},
+			currentPlayer: Player{Captures: 0, Symbol: SymbolPlayer1},
 			expectedNewSymbol: map[int]string{
 				0: "0",
 				1: ".",
@@ -762,7 +794,7 @@ func TestPutStone(t *testing.T) {
 				"..................." +
 				"...................",
 			pos:           &Pos{0, 0},
-			currentPlayer: Player{0, SymbolPlayer1},
+			currentPlayer: Player{Captures: 0, Symbol: SymbolPlayer1},
 			expectedNewSymbol: map[int]string{
 				0:  "0",
 				1:  ".",
@@ -818,7 +850,7 @@ func TestIsForbidden(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			currentPlayer:     Player{0, SymbolPlayer1},
+			currentPlayer:     Player{Captures: 0, Symbol: SymbolPlayer1},
 			index:             23,
 			expectedForbidden: true,
 		},
@@ -843,7 +875,7 @@ func TestIsForbidden(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			currentPlayer:     Player{0, SymbolPlayer2},
+			currentPlayer:     Player{Captures: 0, Symbol: SymbolPlayer2},
 			index:             44,
 			expectedForbidden: true,
 		},
@@ -868,7 +900,7 @@ func TestIsForbidden(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			currentPlayer:     Player{0, SymbolPlayer2},
+			currentPlayer:     Player{Captures: 0, Symbol: SymbolPlayer2},
 			index:             44,
 			expectedForbidden: true,
 		},
@@ -893,7 +925,7 @@ func TestIsForbidden(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			currentPlayer:     Player{0, SymbolPlayer1},
+			currentPlayer:     Player{Captures: 0, Symbol: SymbolPlayer1},
 			index:             44,
 			expectedForbidden: true,
 		},
@@ -918,7 +950,7 @@ func TestIsForbidden(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			currentPlayer:     Player{0, SymbolPlayer2},
+			currentPlayer:     Player{Captures: 0, Symbol: SymbolPlayer2},
 			index:             55,
 			expectedForbidden: false,
 		},
@@ -943,7 +975,7 @@ func TestIsForbidden(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			currentPlayer:     Player{0, SymbolPlayer1},
+			currentPlayer:     Player{Captures: 0, Symbol: SymbolPlayer1},
 			index:             105,
 			expectedForbidden: false,
 		},

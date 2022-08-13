@@ -139,7 +139,7 @@ func TestGetAllIndexChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:            23,
-			currentPlayer:    Player{0, SymbolPlayerMachine},
+			currentPlayer:    Player{Symbol: SymbolPlayerMachine},
 			expectedChildren: []int{24, 43, 42, 41, 22, 3, 4, 5},
 		},
 		{
@@ -164,7 +164,7 @@ func TestGetAllIndexChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:            23,
-			currentPlayer:    Player{0, SymbolPlayerMachine},
+			currentPlayer:    Player{Symbol: SymbolPlayerMachine},
 			expectedChildren: []int{43, 42, 41, 22, 3, 4, 5, 6, 25, 44},
 		},
 		{
@@ -189,7 +189,7 @@ func TestGetAllIndexChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:            23,
-			currentPlayer:    Player{0, SymbolPlayerMachine},
+			currentPlayer:    Player{Symbol: SymbolPlayerMachine},
 			expectedChildren: []int{160, 161, 162, 179, 181, 198, 200, 217, 218, 219},
 		},
 	}
@@ -237,7 +237,7 @@ func TestUpdateSetChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:            114,
-			currentPlayer:    Player{0, SymbolPlayerMachine},
+			currentPlayer:    Player{Symbol: SymbolPlayerMachine},
 			expectedChildren: []int{1, 19, 20, 21, 40, 57, 58, 59, 95, 96, 115, 133, 134},
 		},
 	}
@@ -392,7 +392,7 @@ func TestNegaScout(t *testing.T) {
 				"...............0.0." +
 				"..................0",
 			depth:            10,
-			currentPlayer:    Player{0, SymbolPlayerMachine},
+			currentPlayer:    Player{Symbol: SymbolPlayerMachine},
 			notExpectedIndex: 339, // expected 281
 		},
 	}
