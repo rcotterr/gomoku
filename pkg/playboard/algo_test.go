@@ -7,107 +7,115 @@ import (
 	"testing"
 )
 
-//func TestGetChildren(t *testing.T) {
-//	testCases := []struct {
-//		name               string
-//		playboard          string
-//		index              int
-//		setChildrenIndexes intSet
-//		currentPlayer      Player
-//		expectedChildren   []int
-//	}{
-//		{
-//			name: "all 8 children",
-//			playboard: "..................." +
-//				"....M.............." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"...................",
-//			index:              23,
-//			setChildrenIndexes: intSet{},
-//			currentPlayer:      Player{0, SymbolPlayerMachine},
-//			expectedChildren:   []int{24, 43, 42, 41, 22, 3, 4, 5},
-//		},
-//		{
-//			name: "not all children free",
-//			playboard: "..................." +
-//				"....M1............." +
-//				"...1..............." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"..................." +
-//				"...................",
-//			index:              23,
-//			setChildrenIndexes: intSet{4: member, 5: member, 6: member, 23: member, 25: member, 22: member, 40: member, 42: member, 59: member, 60: member, 61: member},
-//			currentPlayer:      Player{0, SymbolPlayerMachine},
-//			expectedChildren:   []int{43, 42, 22, 3, 4, 5, 6, 25, 40, 59, 60, 61},
-//		},
-//		//{
-//		//	name: "is forbidden for put is not in children",
-//		//	playboard: "..................." +
-//		//		"....M1............." +
-//		//		"...1..............." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"..................." +
-//		//		"...................",
-//		//	index:            23,
-//		//	currentPlayer:    playboard.Player{0, playboard.SymbolPlayerMachine},
-//		//	expectedChildren: []int{43, 42, 22, 3, 4, 5},
-//		//},
-//	}
-//	for _, tc := range testCases {
-//		t.Run(tc.playboard, func(t *testing.T) {
-//
-//			children := getChildren(tc.playboard, tc.index, tc.currentPlayer, tc.setChildrenIndexes)
-//
-//			assert.Equal(t, len(tc.expectedChildren), len(children))
-//			for _, val := range tc.expectedChildren {
-//				_, found := children[val]
-//				assert.Equal(t, found, true, fmt.Sprintf("val is %d", val))
-//			}
-//
-//		})
-//	}
-//}
+func TestGetChildren(t *testing.T) {
+	testCases := []struct {
+		name               string
+		playboard          string
+		index              int
+		setChildrenIndexes intSet
+		currentPlayer      Player
+		expectedChildren   []int
+	}{
+		//{
+		//	name: "all 8 children",
+		//	playboard: "..................." +
+		//		"....M.............." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"...................",
+		//	index:              23,
+		//	setChildrenIndexes: intSet{},
+		//	currentPlayer:      Player{0, SymbolPlayerMachine, nil},
+		//	expectedChildren:   []int{24, 43, 42, 41, 22, 3, 4, 5},
+		//},
+		//{
+		//	name: "not all children free",
+		//	playboard: "..................." +
+		//		"....M1............." +
+		//		"...1..............." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"...................",
+		//	index:              23,
+		//	setChildrenIndexes: intSet{4: member, 5: member, 6: member, 23: member, 25: member, 22: member, 40: member, 42: member, 59: member, 60: member, 61: member},
+		//	currentPlayer:      Player{0, SymbolPlayerMachine, nil},
+		//	expectedChildren:   []int{43, 42, 22, 3, 4, 5, 6, 25, 40, 59, 60, 61},
+		//},
+		{
+			name: "is forbidden for put is not in children",
+			playboard: "..................." +
+				"....M1............." +
+				"...1..............." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:              23,
+			currentPlayer:      Player{0, SymbolPlayerMachine, nil},
+			setChildrenIndexes: intSet{},
+			expectedChildren:   []int{43, 42, 22, 3, 4, 5},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.playboard, func(t *testing.T) {
+
+			children := getChildren(tc.playboard, tc.index, tc.currentPlayer, tc.setChildrenIndexes)
+
+			assert.Equal(t, len(tc.expectedChildren), len(children))
+			for _, val := range tc.expectedChildren {
+				found := false
+				for _, state := range children {
+					if state.index == val {
+						found = true
+						break
+					}
+				}
+				//_, found := children[val]
+				assert.Equal(t, found, true, fmt.Sprintf("val is %d", val))
+			}
+
+		})
+	}
+}
 
 func TestGetAllIndexChildren(t *testing.T) {
 	testCases := []struct {
@@ -266,33 +274,33 @@ func TestNegaScout(t *testing.T) {
 		expectedChildren []int
 		notExpectedIndex int
 	}{
-		//{
-		//	name: "test not -1",
-		//	playBoard: "..................." +
-		//		"..................." +
-		//		"..................." +
-		//		"........0.........." +
-		//		"......М............" +
-		//		"..................." +
-		//		"......0М.000......." +
-		//		".....0М0..0........" +
-		//		".......00.0........" +
-		//		"..........0........" +
-		//		"..........М........" +
-		//		".......М0000......." +
-		//		".............0....." +
-		//		"..................." +
-		//		"..................." +
-		//		"..................." +
-		//		"..................." +
-		//		"..................." +
-		//		"...................",
-		//	index:            114,
-		//	depth:            10,
-		//	currentPlayer:    Player{0, SymbolPlayerMachine},
-		//	expectedChildren: []int{1, 19, 20, 21, 40, 57, 58, 59, 95, 96, 115, 133, 134},
-		//	notExpectedIndex: -1,
-		//},
+		{
+			name: "test not -1",
+			playBoard: "..................." +
+				"..................." +
+				"..................." +
+				"........0.........." +
+				"......M............" +
+				"..................." +
+				"......0M.000......." +
+				".....0M0..0........" +
+				".......00.0........" +
+				"..........0........" +
+				"..........M........" +
+				".......M0000......." +
+				".............0....." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:            114,
+			depth:            10,
+			currentPlayer:    Player{0, SymbolPlayerMachine, nil},
+			expectedChildren: []int{1, 19, 20, 21, 40, 57, 58, 59, 95, 96, 115, 133, 134},
+			notExpectedIndex: -1,
+		},
 		//{
 		//	name: "test not 179",
 		//	playBoard: "..................." +
@@ -370,31 +378,31 @@ func TestNegaScout(t *testing.T) {
 		//	currentPlayer:    Player{0, SymbolPlayerMachine},
 		//	notExpectedIndex: 254, //expected 122 or 212
 		//},
-		{
-			name: "speed check",
-			playBoard: "..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				"...........0......." +
-				"..........M........" +
-				".........M........." +
-				"........M.........." +
-				".......M..........." +
-				"......0............" +
-				"..................." +
-				"..................." +
-				"...............M..." +
-				"...............M0.." +
-				"...............0.0." +
-				"..................0",
-			depth:            10,
-			currentPlayer:    Player{Symbol: SymbolPlayerMachine},
-			notExpectedIndex: 339, // expected 281
-		},
+		//{
+		//	name: "speed check",
+		//	playBoard: "..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"..................." +
+		//		"...........0......." +
+		//		"..........M........" +
+		//		".........M........." +
+		//		"........M.........." +
+		//		".......M..........." +
+		//		"......0............" +
+		//		"..................." +
+		//		"..................." +
+		//		"...............M..." +
+		//		"...............M0.." +
+		//		"...............0.0." +
+		//		"..................0",
+		//	depth:            10,
+		//	currentPlayer:    Player{Symbol: SymbolPlayerMachine},
+		//	notExpectedIndex: 339, // expected 281
+		//},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playBoard, func(t *testing.T) {
@@ -404,7 +412,7 @@ func TestNegaScout(t *testing.T) {
 			humanPlayer := Player1
 			machinePlayer := MachinePlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			_, index = NegaScout(State{tc.playBoard, index, 0}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions, allIndexesPath)
+			_, index = NegaScout(State{tc.playBoard, index, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions, allIndexesPath)
 
 			assert.NotEqual(t, index, tc.notExpectedIndex)
 		})

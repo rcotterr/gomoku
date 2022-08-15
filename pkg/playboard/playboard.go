@@ -254,17 +254,17 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, error)
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
 
-	numCaptures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
-	if numCaptures > 0 {
+	captures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
+	if captures > 0 {
 		for _, capturedIndex := range arrIndexes {
 			newPlayBoard = strings.Join([]string{newPlayBoard[:capturedIndex], EmptySymbol, newPlayBoard[capturedIndex+1:]}, "")
 		}
-		currentPlayer.Captures += numCaptures
+		currentPlayer.Captures += captures
 	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
 		return State{}, fmt.Errorf("position is forbidden")
 	}
 
-	return State{newPlayBoard, index, numCaptures}, nil //TO DO return not always 0 captures
+	return State{newPlayBoard, index, captures, arrIndexes}, nil //TO DO return not always 0 captures
 }
 
 func PossibleCapturedStone(node string, index int, stepCount int, symbol string) int {
