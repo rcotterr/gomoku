@@ -168,6 +168,8 @@ func (g *AIGame) Update() error {
 			}
 			g.playBoard = newPlayBoard.Node
 			playboard.PrintPlayBoard(g.playBoard) //TO DO delete print
+			fmt.Println(g.machinePlayer)
+			fmt.Println(g.humanPlayer)
 			g.machineTurn = false
 			g.turns += 1
 		} else {
@@ -183,6 +185,8 @@ func (g *AIGame) Update() error {
 			g.playBoard = newPlayBoard.Node
 			g.index = newIndex
 			playboard.PrintPlayBoard(g.playBoard)
+			fmt.Println(g.machinePlayer)
+			fmt.Println(g.humanPlayer)
 			g.machineTurn = true
 			g.turns += 1
 		}
