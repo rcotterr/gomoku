@@ -334,7 +334,7 @@ func TestGameOver(t *testing.T) {
 			player2:        &Player{Symbol: SymbolPlayerMachine},
 		},
 		{
-			name: "is not over second time 5-in-row",
+			name: "is over second time 5-in-row",
 			playboard: "..................." +
 				"..................." +
 				"..................." +
@@ -357,7 +357,59 @@ func TestGameOver(t *testing.T) {
 			index:          139,
 			player1:        &Player{Symbol: SymbolPlayer1},
 			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(159)},
-			expectedIsOver: true,
+			expectedIsOver: false,
+		},
+		{
+			name: "is not over capture",
+			playboard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..........0MM......" +
+				"........0M0........" +
+				".....0.0M..0......." +
+				"......MM.MM0......." +
+				".......M0M........." +
+				".....0MMMM0........" +
+				".......M.M........." +
+				"......00.M0......." +
+				".........0........." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:          142,
+			player1:        &Player{Symbol: SymbolPlayer1},
+			player2:        &Player{Symbol: SymbolPlayerMachine},
+			expectedIsOver: false,
+		},
+		{
+			name: "is not over capture",
+			playboard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..........0MM......" +
+				"........0M0........" +
+				".....0.0M..0......." +
+				"......MM0.M0......." +
+				".......M0M........." +
+				".....0MMMM0........" +
+				".......M.M........." +
+				"......00.M0........" +
+				".........0........." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:          142,
+			player1:        &Player{Symbol: SymbolPlayer1},
+			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(142)},
+			expectedIsOver: false,
 		},
 	}
 
