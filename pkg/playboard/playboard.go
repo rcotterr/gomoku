@@ -311,8 +311,8 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			startIndex = tmpIndex
 			possibleCaptures += PossibleCapturedStone(node, startIndex, step, symbol)
-		} else {
-			if string(node[tmpIndex]) == EmptySymbol {
+		} else if condition(tmpIndex, index) {
+			if string(node[tmpIndex]) == EmptySymbol { //TO DO check empty according to condition
 				empty += 1
 			}
 			break
@@ -324,7 +324,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 		if condition(tmpIndex, index) && string(node[tmpIndex]) == symbol {
 			endIndex = tmpIndex
 			possibleCaptures += PossibleCapturedStone(node, endIndex, step, symbol)
-		} else {
+		} else if condition(tmpIndex, index) {
 			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
 			}

@@ -432,62 +432,16 @@ func TestNegaScout(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playBoard, func(t *testing.T) {
 			var transpositions = make(stringSet)
-			index := -1
 			humanPlayer := Player1
 			machinePlayer := MachinePlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			_, index = NegaScout(State{tc.playBoard, index, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
+			value, index := NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
 
+			print(value)
 			assert.NotEqual(t, index, tc.notExpectedIndex)
 		})
 	}
 }
-
-//Algo  1.8626471s
-//current play board:
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  0  .  .  .  .  .  .  .  .  .  .  .  .  .
-//6  .  .  .  .  .  0  .  .  .  .  .  .  0  .  .  .  .  .  .
-//7  .  .  .  .  .  0  .  .  .  .  .  M  .  .  .  .  .  .  .
-//8  .  .  .  .  .  ?  .  .  .  .  M  .  .  .  .  .  .  .  .
-//9  .  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .
-//10 .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .  .
-//11 .  .  .  .  .  .  .  0  .  .  .  .  .  .  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-
-//Algo  1.2841888s
-//current play board:
-//0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//6  .  .  .  .  .  .  .  .  .  .  .  .  0  .  .  .  .  .  .
-//7  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//8  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//9  .  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .
-//10 .  .  .  .  .  .  .  .  .  .  ?  .  .  .  .  .  .  .  .
-//11 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 
 //   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
 //0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
@@ -596,3 +550,47 @@ func TestNegaScout(t *testing.T) {
 //16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 //17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 //18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+
+func TestHeuristic(t *testing.T) {
+	testCases := []struct {
+		name          string
+		playboard     string
+		index         int
+		currentPlayer Player
+		expectedNum   float64
+	}{
+		{
+			name: "test heuristic 1",
+			playboard: "0MMM..............." +
+				"0.................." +
+				"0.................." +
+				"0.................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			currentPlayer: Player{Captures: 0, Symbol: SymbolPlayer1},
+			index:         57,
+			expectedNum:   10000,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.playboard, func(t *testing.T) {
+
+			num := Heuristic(State{Node: tc.playboard, index: tc.index}, tc.currentPlayer.Symbol, 0, []int{})
+
+			assert.Equal(t, tc.expectedNum, num)
+		})
+	}
+}
