@@ -22,6 +22,16 @@ var AllTimesIsOver *time.Duration
 var AllTimesgetChildren *time.Duration
 var AllTimesCopySet *time.Duration
 
+type CustomError interface {
+	Error() string
+}
+
+type PositionForbiddenError struct{}
+
+func (e *PositionForbiddenError) Error() string {
+	return fmt.Sprintf("position is forbidden")
+}
+
 func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Duration) {
 	elapsed := time.Since(start)
 	if runTimes != nil && allTime != nil {
@@ -244,7 +254,7 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-func PutStone(playBoard string, index int, currentPlayer *Player) (State, error) {
+func PutStone(playBoard string, index int, currentPlayer *Player) (State, CustomError) {
 
 	//index := pos.Y*N + pos.X
 	//fmt.Println(index)
@@ -261,10 +271,10 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, error)
 		}
 		currentPlayer.Captures += captures
 	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
-		return State{}, fmt.Errorf("position is forbidden")
+		return State{}, &PositionForbiddenError{}
 	}
 
-	return State{newPlayBoard, index, captures, arrIndexes}, nil //TO DO return not always 0 captures
+	return State{newPlayBoard, index, captures, arrIndexes}, nil
 }
 
 func PossibleCapturedStone(node string, index int, stepCount int, symbol string) int {

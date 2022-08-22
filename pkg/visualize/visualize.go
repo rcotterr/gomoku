@@ -53,6 +53,7 @@ type HumanGame struct {
 	index         int
 	isOver        bool
 	turns         int
+	forbiddenMove bool
 }
 
 func (g HumanGame) GetPlayBoard() string { return g.playBoard }
@@ -67,6 +68,7 @@ type AIGame struct {
 	index         int
 	isOver        bool
 	turns         int
+	forbiddenMove bool
 }
 
 func (g AIGame) GetPlayBoard() string { return g.playBoard }
@@ -117,7 +119,6 @@ func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
 		mx, my = int(math.Round(float64(mx-start)/width)), int(math.Round(float64(my-start)/width))
 		index := my*playboard.N + mx
-		//fmt.Println("HERE X Y !", mx, my, index)
 		if index >= 0 && index < playboard.N*playboard.N {
 			return index, nil
 		}
@@ -169,9 +170,16 @@ func (g *AIGame) Update() error {
 			g.playBoard = newPlayBoard.Node
 			playboard.PrintPlayBoard(g.playBoard) //TO DO delete print
 			fmt.Println(g.machinePlayer)
+			if g.machinePlayer.IndexAlmostWin != nil {
+				fmt.Println(g.machinePlayer, *g.machinePlayer.IndexAlmostWin)
+			}
 			fmt.Println(g.humanPlayer)
+			if g.humanPlayer.IndexAlmostWin != nil {
+				fmt.Println(g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
+			}
 			g.machineTurn = false
 			g.turns += 1
+			g.forbiddenMove = false
 		} else {
 			newIndex, err := HumanTurnVis(*g.humanPlayer)
 			if err != nil {
@@ -179,16 +187,30 @@ func (g *AIGame) Update() error {
 			}
 			newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.humanPlayer)
 			if err != nil {
-				fmt.Println(err)
+				switch e := err.(type) {
+				case *playboard.PositionForbiddenError:
+					log.Println(e)
+					g.forbiddenMove = true
+					//TO DO add position is busy?
+				default:
+					log.Println(e)
+				}
 				return nil
 			}
 			g.playBoard = newPlayBoard.Node
 			g.index = newIndex
 			playboard.PrintPlayBoard(g.playBoard)
 			fmt.Println(g.machinePlayer)
+			if g.machinePlayer.IndexAlmostWin != nil {
+				fmt.Println(g.machinePlayer, *g.machinePlayer.IndexAlmostWin)
+			}
 			fmt.Println(g.humanPlayer)
+			if g.humanPlayer.IndexAlmostWin != nil {
+				fmt.Println(g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
+			}
 			g.machineTurn = true
 			g.turns += 1
+			g.forbiddenMove = false
 		}
 	} else {
 		g.isOver = true
@@ -222,7 +244,6 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 			op := &ebiten.DrawImageOptions{}
 			mx, my := index%playboard.N, index/playboard.N
 			mx, my = xStart+width*(mx), yStart+width*(my)
-			//fmt.Println(mx, my)
 			op.GeoM.Translate(float64(mx-widthStone/2), float64(my-widthStone/2))
 
 			if string(stone) != playboard.SymbolPlayer1 {
@@ -233,19 +254,8 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 		}
 	}
 
-	// Draw info
-	//msg := fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS())
 	text.Draw(screen, fmt.Sprintf("Turns: %d", g.GetTurns()), normalFont, 300, 80, color.Black)
 
-	// Draw the sample text
-	//sampleText := fmt.Sprintf("AI timer : %s", time.Duration(3))
-	//text.Draw(screen, sampleText, normalFont, 300, 80, color.Black)
-	//if g.currentPlayer.Symbol == playboard.SymbolPlayer1 || g.currentPlayer.Symbol == playboard.SymbolPlayer2 {
-	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Turn player (%s)", g.currentPlayer.Symbol), 300, 100)
-	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.currentPlayer.Symbol, g.currentPlayer.Captures), 300, 150)
-	//	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Capture player (%s) is (%d)", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), 300, 200)
-	//}
-	//TO DO timer
 }
 
 // Draw draws the game screen.
@@ -261,6 +271,9 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 	}
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.currentPlayer.Symbol, g.currentPlayer.Captures), normalFont, 300, y1, color.Black)
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), normalFont, 300, y2, color.Black)
+	if g.forbiddenMove { //move to common _draw
+		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
+	}
 }
 
 // Draw draws the game screen.
@@ -273,7 +286,9 @@ func (g *AIGame) Draw(screen *ebiten.Image) {
 	startY += 20
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 100, color.Black)
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 120, color.Black)
-
+	if g.forbiddenMove { //move to common _draw
+		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
+	}
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
