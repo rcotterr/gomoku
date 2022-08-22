@@ -215,7 +215,7 @@ func (g *AIGame) Update() error {
 	} else {
 		g.isOver = true
 	}
-	fmt.Println("test update", time.Now())
+	//fmt.Println("test update", time.Now())
 
 	return nil
 }
@@ -274,6 +274,9 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 	if g.forbiddenMove { //move to common _draw
 		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
 	}
+	if g.isOver { //move to common _draw
+		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, 30, 300, color.Black)
+	}
 }
 
 // Draw draws the game screen.
@@ -288,6 +291,9 @@ func (g *AIGame) Draw(screen *ebiten.Image) {
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 120, color.Black)
 	if g.forbiddenMove { //move to common _draw
 		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
+	}
+	if g.isOver { //move to common _draw
+		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, 30, 300, color.Black)
 	}
 }
 
