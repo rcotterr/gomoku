@@ -56,6 +56,7 @@ type HumanGame struct {
 	isOver        bool
 	turns         int
 	forbiddenMove bool
+	algo          playboard.Algo
 }
 
 func (g HumanGame) GetPlayBoard() string   { return g.playBoard }
@@ -74,6 +75,7 @@ type AIGame struct {
 	turns          int
 	forbiddenMove  bool
 	humanMoveFirst bool
+	algo           playboard.Algo
 }
 
 func (g AIGame) GetPlayBoard() string   { return g.playBoard }
@@ -165,10 +167,13 @@ func (g *HumanGame) Update() error {
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
 func (g *AIGame) Update() error {
+	if g.isOver {
+		return nil
+	}
 
-	if !g.isOver && !playboard.GameOver(g.playBoard, g.machinePlayer, g.humanPlayer, g.index) {
+	if !playboard.GameOver(g.playBoard, g.machinePlayer, g.humanPlayer, g.index) {
 		if g.machineTurn {
-			g.index = playboard.Algo(g.playBoard, *g.machinePlayer, *g.humanPlayer)
+			g.index = g.algo.GetIndex(g.playBoard, *g.machinePlayer, *g.humanPlayer)
 			newPlayBoard, err := playboard.PutStone(g.playBoard, g.index, g.machinePlayer)
 			if err != nil {
 				fmt.Println("Invalid machine algo!!!!!", err)
@@ -222,7 +227,6 @@ func (g *AIGame) Update() error {
 	} else {
 		g.isOver = true
 	}
-	//fmt.Println("test update", time.Now())
 
 	return nil
 }
@@ -330,7 +334,7 @@ func NewHumanGame() GameInterface {
 	return game
 }
 
-func NewAIGame(humanMoveFirst bool) GameInterface {
+func NewAIGame(depth int, humanMoveFirst bool) GameInterface {
 	var humanPlayer playboard.Player
 	if humanMoveFirst {
 		humanPlayer = playboard.Player1
@@ -346,6 +350,7 @@ func NewAIGame(humanMoveFirst bool) GameInterface {
 		machineTurn:    !humanMoveFirst,
 		turns:          0,
 		humanMoveFirst: humanMoveFirst,
+		algo:           playboard.Algo{depth},
 	}
 	return game
 }

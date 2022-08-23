@@ -14,7 +14,7 @@ func main() {
 	if *Human {
 		game = visualize.NewHumanGame()
 	} else {
-		game = visualize.NewAIGame(*moveFirst)
+		game = visualize.NewAIGame(10, *moveFirst)
 	}
 	visualize.Vis(game)
 }

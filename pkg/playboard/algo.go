@@ -333,7 +333,11 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 	return maxEval, maxIndex
 }
 
-func Algo(playBoard string, machinePlayer Player, humanPlayer Player) int {
+type Algo struct {
+	Depth int
+}
+
+func (a Algo) GetIndex(playBoard string, machinePlayer Player, humanPlayer Player) int {
 	defer TimeTrackPrint(time.Now(), fmt.Sprintf("Algo "))
 	if RunTimesHeuristic != nil {
 		*RunTimesHeuristic = 0
@@ -373,7 +377,7 @@ func Algo(playBoard string, machinePlayer Player, humanPlayer Player) int {
 
 	var transpositions = make(stringSet)
 
-	_, index := NegaScout(State{playBoard, -1, 0, []int{}}, 10, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
+	_, index := NegaScout(State{playBoard, -1, 0, []int{}}, a.Depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
 
 	return index
 }
