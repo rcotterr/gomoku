@@ -8,13 +8,14 @@ import (
 func main() {
 	Human := flag.Bool("human", false, "Play against another human player")
 	moveFirst := flag.Bool("moveFirst", false, "Human player moves first")
+	depth := flag.Int("depth", 10, "Depth for algorithm")
 	flag.Parse()
 
 	var game visualize.GameInterface
 	if *Human {
 		game = visualize.NewHumanGame()
 	} else {
-		game = visualize.NewAIGame(10, *moveFirst)
+		game = visualize.NewAIGame(*depth, *moveFirst)
 	}
 	visualize.Vis(game)
 }
