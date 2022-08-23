@@ -30,7 +30,7 @@ type GameInterface interface {
 	Draw(screen *ebiten.Image)
 	Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
 	GetPlayBoard() string
-	GetTurns() int
+	GetPly() int
 	GetForbiddenMove() bool
 	GetIsOver() bool
 }
@@ -54,13 +54,13 @@ type HumanGame struct {
 	anotherPlayer *playboard.Player
 	index         int
 	isOver        bool
-	turns         int
+	ply           int
 	forbiddenMove bool
 	algo          playboard.Algo
 }
 
 func (g HumanGame) GetPlayBoard() string   { return g.playBoard }
-func (g HumanGame) GetTurns() int          { return g.turns }
+func (g HumanGame) GetPly() int            { return g.ply }
 func (g HumanGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g HumanGame) GetIsOver() bool        { return g.isOver }
 
@@ -72,14 +72,14 @@ type AIGame struct {
 	machineTurn    bool
 	index          int
 	isOver         bool
-	turns          int
+	ply            int
 	forbiddenMove  bool
 	humanMoveFirst bool
 	algo           playboard.Algo
 }
 
 func (g AIGame) GetPlayBoard() string   { return g.playBoard }
-func (g AIGame) GetTurns() int          { return g.turns }
+func (g AIGame) GetPly() int            { return g.ply }
 func (g AIGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g AIGame) GetIsOver() bool        { return g.isOver }
 
@@ -155,7 +155,7 @@ func (g *HumanGame) Update() error {
 		//g.currentPlayer.Captures += newPlayBoard.Captures // its in PutStone
 		playboard.PrintPlayBoard(g.playBoard)
 		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
-		g.turns += 1
+		g.ply += 1
 	} else {
 		g.isOver = true
 	}
@@ -190,7 +190,7 @@ func (g *AIGame) Update() error {
 				fmt.Println(g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
 			}
 			g.machineTurn = false
-			g.turns += 1
+			g.ply += 1
 			g.forbiddenMove = false
 		} else {
 			newIndex, err := HumanTurnVis(*g.humanPlayer)
@@ -221,7 +221,7 @@ func (g *AIGame) Update() error {
 				fmt.Println(g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
 			}
 			g.machineTurn = true
-			g.turns += 1
+			g.ply += 1
 			g.forbiddenMove = false
 		}
 	} else {
@@ -271,7 +271,9 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 		}
 	}
 
-	text.Draw(screen, fmt.Sprintf("Turns: %d", g.GetTurns()), normalFont, 300, 80, color.Black)
+	ply := g.GetPly()
+	text.Draw(screen, fmt.Sprintf("Turns: %d", ply/2), normalFont, 300, 80, color.Black)
+	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, 300, 100, color.Black)
 
 	if g.GetForbiddenMove() {
 		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
@@ -288,9 +290,9 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 	text.Draw(screen, fmt.Sprintf("Turn to play for Player: %s", g.currentPlayer.Symbol), normalFont, 300, 60, color.Black)
 	var y1, y2 int
 	if g.currentPlayer.Symbol == playboard.SymbolPlayer1 {
-		y1, y2 = 100, 120
+		y1, y2 = 120, 140
 	} else {
-		y1, y2 = 120, 100
+		y1, y2 = 140, 120
 	}
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.currentPlayer.Symbol, g.currentPlayer.Captures), normalFont, 300, y1, color.Black)
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), normalFont, 300, y2, color.Black)
@@ -304,8 +306,8 @@ func (g *AIGame) Draw(screen *ebiten.Image) {
 	startY := 60
 	text.Draw(screen, fmt.Sprintf("AI timer : %s", playboard.AITimer), normalFont, startX, startY, color.Black)
 	startY += 20
-	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 100, color.Black)
-	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 120, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 120, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 140, color.Black)
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
@@ -329,7 +331,7 @@ func NewHumanGame() GameInterface {
 		anotherPlayer: &playboard.Player2,
 		index:         -1,
 		isOver:        false,
-		turns:         0,
+		ply:           0,
 	}
 	return game
 }
@@ -348,7 +350,7 @@ func NewAIGame(depth int, humanMoveFirst bool) GameInterface {
 		index:          -1,
 		isOver:         false,
 		machineTurn:    !humanMoveFirst,
-		turns:          0,
+		ply:            0,
 		humanMoveFirst: humanMoveFirst,
 		algo:           playboard.Algo{depth},
 	}
