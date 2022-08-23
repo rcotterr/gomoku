@@ -31,6 +31,8 @@ type GameInterface interface {
 	Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
 	GetPlayBoard() string
 	GetTurns() int
+	GetForbiddenMove() bool
+	GetIsOver() bool
 }
 
 type MockGame struct{}
@@ -56,8 +58,10 @@ type HumanGame struct {
 	forbiddenMove bool
 }
 
-func (g HumanGame) GetPlayBoard() string { return g.playBoard }
-func (g HumanGame) GetTurns() int        { return g.turns }
+func (g HumanGame) GetPlayBoard() string   { return g.playBoard }
+func (g HumanGame) GetTurns() int          { return g.turns }
+func (g HumanGame) GetForbiddenMove() bool { return g.forbiddenMove }
+func (g HumanGame) GetIsOver() bool        { return g.isOver }
 
 type AIGame struct {
 	//screen *ebiten.Image
@@ -72,8 +76,10 @@ type AIGame struct {
 	humanMoveFirst bool
 }
 
-func (g AIGame) GetPlayBoard() string { return g.playBoard }
-func (g AIGame) GetTurns() int        { return g.turns }
+func (g AIGame) GetPlayBoard() string   { return g.playBoard }
+func (g AIGame) GetTurns() int          { return g.turns }
+func (g AIGame) GetForbiddenMove() bool { return g.forbiddenMove }
+func (g AIGame) GetIsOver() bool        { return g.isOver }
 
 const (
 	screenWidth  = 1280
@@ -247,7 +253,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 			mx, my = xStart+width*(mx), yStart+width*(my)
 			op.GeoM.Translate(float64(mx-widthStone/2), float64(my-widthStone/2))
 
-			if string(stone) != playboard.SymbolPlayer1 {
+			if string(stone) == playboard.SymbolPlayer1 {
 				screen.DrawImage(WhiteStone, op)
 			} else {
 				screen.DrawImage(BlackStone, op)
@@ -257,6 +263,12 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 
 	text.Draw(screen, fmt.Sprintf("Turns: %d", g.GetTurns()), normalFont, 300, 80, color.Black)
 
+	if g.GetForbiddenMove() {
+		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
+	}
+	if g.GetIsOver() {
+		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, 30, 300, color.Black)
+	}
 }
 
 // Draw draws the game screen.
@@ -272,12 +284,6 @@ func (g *HumanGame) Draw(screen *ebiten.Image) {
 	}
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.currentPlayer.Symbol, g.currentPlayer.Captures), normalFont, 300, y1, color.Black)
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), normalFont, 300, y2, color.Black)
-	if g.forbiddenMove { //move to common _draw
-		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
-	}
-	if g.isOver { //move to common _draw
-		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, 30, 300, color.Black)
-	}
 }
 
 // Draw draws the game screen.
@@ -290,12 +296,6 @@ func (g *AIGame) Draw(screen *ebiten.Image) {
 	startY += 20
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 100, color.Black)
 	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 120, color.Black)
-	if g.forbiddenMove { //move to common _draw
-		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
-	}
-	if g.isOver { //move to common _draw
-		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, 30, 300, color.Black)
-	}
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
@@ -325,9 +325,15 @@ func NewHumanGame() GameInterface {
 }
 
 func NewAIGame(humanMoveFirst bool) GameInterface {
+	var humanPlayer playboard.Player
+	if humanMoveFirst {
+		humanPlayer = playboard.Player1
+	} else {
+		humanPlayer = playboard.Player2
+	}
 	game := &AIGame{
 		playBoard:      strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
-		humanPlayer:    &playboard.Player1,
+		humanPlayer:    &humanPlayer,
 		machinePlayer:  &playboard.MachinePlayer,
 		index:          -1,
 		isOver:         false,
