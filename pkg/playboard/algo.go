@@ -284,7 +284,7 @@ type State struct {
 	capturedIndexes []int
 }
 
-func NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer Player, humanPlayer Player, childIndexesSet intSet, transpositions stringSet) (float64, int) {
+func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, machinePlayer Player, humanPlayer Player, childIndexesSet intSet, transpositions stringSet) (float64, int) {
 	if depth == 0 || GameOver(state.Node, &machinePlayer, &humanPlayer, state.index) {
 		h1, h2 := getHeuristic(state, machinePlayer, humanPlayer)
 
@@ -312,13 +312,13 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 
 	for i, child := range childrenSlice {
 		setNewChildIndexes := copySet(children)
-		eval, _ := NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions)
+		eval, _ := a.NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions)
 		eval = -eval
 
 		if eval > maxEval {
 			maxEval = eval
 
-			if depth == 10 {
+			if depth == a.Depth {
 				maxIndex = child.State.index
 			}
 		}
@@ -329,7 +329,7 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 			break
 		}
 
-		if depth != 10 {
+		if depth != a.Depth {
 			if i+1 < len(childrenSlice) {
 				if child.Value > childrenSlice[i+1].Value || child.h1 > childrenSlice[i+1].h1 {
 					break
@@ -389,7 +389,7 @@ func (a Algo) GetIndex(playBoard string, machinePlayer Player, humanPlayer Playe
 
 	var transpositions = make(stringSet)
 
-	_, index := NegaScout(State{playBoard, -1, 0, []int{}}, a.Depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
+	_, index := a.NegaScout(State{playBoard, -1, 0, []int{}}, a.Depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
 
 	return index
 }
