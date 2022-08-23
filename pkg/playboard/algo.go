@@ -165,7 +165,7 @@ type Child struct {
 	State State
 }
 
-func cutChildren(children []State, transpositions stringSet, player Player, opponent Player, multiplier int) []Child {
+func sortChildren(children []State, transpositions stringSet, player Player, opponent Player, multiplier int) []Child {
 	var new_ []Child
 
 	for _, childState := range children {
@@ -187,20 +187,20 @@ func cutChildren(children []State, transpositions stringSet, player Player, oppo
 		return new_[i].Value > new_[j].Value
 	})
 
-	for i := range children {
-		if i+1 < len(new_) {
-			//if new_[i+1].Value < 100000 {
-			//	new_ = new_[:i+1]
-			//}
-			if new_[i].Value > new_[i+1].Value {
-				return new_[:i+1]
-			} else if new_[i].h1 > new_[i+1].h1 {
-				return new_[:i+1]
-			}
-		} else {
-			break
-		}
-	}
+	//for i := range children {
+	//	if i+1 < len(new_) {
+	//		//if new_[i+1].Value < 100000 {
+	//		//	new_ = new_[:i+1]
+	//		//}
+	//		if new_[i].Value > new_[i+1].Value {
+	//			return new_[:i+1]
+	//		} else if new_[i].h1 > new_[i+1].h1 {
+	//			return new_[:i+1]
+	//		}
+	//	} else {
+	//		break
+	//	}
+	//}
 
 	return new_
 }
@@ -230,7 +230,7 @@ func cutChildren(children []State, transpositions stringSet, player Player, oppo
 //		maxIndex := 0
 //		depth_ := -1
 //		children := getChildren(node, index, machinePlayer, childIndexesSet)
-//		childrenSlice := cutChildren(children, transpositions)
+//		childrenSlice := sortChildren(children, transpositions)
 //		for _, child := range childrenSlice {
 //			setNewChildIndexes := copySet(children)
 //			//setNewChildIndexes := getIndexes(childrenSlice)
@@ -254,7 +254,7 @@ func cutChildren(children []State, transpositions stringSet, player Player, oppo
 //		minIndex := 0
 //		children := getChildren(node, index, humanPlayer, childIndexesSet)
 //		depth_ := -1
-//		childrenSlice := cutChildren(children, transpositions)
+//		childrenSlice := sortChildren(children, transpositions)
 //		for _, child := range childrenSlice {
 //
 //			setNewChildIndexes := copySet(children)
@@ -304,13 +304,13 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 
 	if multiplier == 1 {
 		children = getChildren(state.Node, state.index, machinePlayer, childIndexesSet)
-		childrenSlice = cutChildren(children, transpositions, machinePlayer, humanPlayer, multiplier)
+		childrenSlice = sortChildren(children, transpositions, machinePlayer, humanPlayer, multiplier)
 	} else {
 		children = getChildren(state.Node, state.index, humanPlayer, childIndexesSet)
-		childrenSlice = cutChildren(children, transpositions, humanPlayer, machinePlayer, multiplier)
+		childrenSlice = sortChildren(children, transpositions, humanPlayer, machinePlayer, multiplier)
 	}
 
-	for _, child := range childrenSlice {
+	for i, child := range childrenSlice {
 		setNewChildIndexes := copySet(children)
 		eval, _ := NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions)
 		eval = -eval
@@ -327,6 +327,18 @@ func NegaScout(state State, depth int, alpha float64, beta float64, multiplier i
 
 		if alpha >= beta {
 			break
+		}
+
+		if depth != 10 {
+			if i+1 < len(childrenSlice) {
+				if child.Value > childrenSlice[i+1].Value || child.h1 > childrenSlice[i+1].h1 {
+					break
+				}
+			}
+		} else if maxEval > 0 {
+			if child.Value > childrenSlice[i+1].Value || child.h1 > childrenSlice[i+1].h1 {
+				break
+			}
 		}
 	}
 

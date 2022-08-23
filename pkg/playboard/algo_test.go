@@ -273,6 +273,7 @@ func TestNegaScout(t *testing.T) {
 		currentPlayer    Player
 		expectedChildren []int
 		notExpectedIndex int
+		humanPlayer      *Player
 	}{
 		//{
 		//	name: "test not -1",
@@ -429,21 +430,21 @@ func TestNegaScout(t *testing.T) {
 		//	notExpectedIndex: -1,
 		//},
 		{
-			name: "test not -1",
+			name: "test make 4",
 			playBoard: "..................." +
 				"..................." +
 				"..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				"..................." +
-				".........M........." +
-				"......000M........." +
-				".........M........." +
-				"..................." +
-				"..................." +
-				"..................." +
+				"..........M........" +
+				".........1........." +
+				"......M.11M........" +
+				".......1..1........" +
+				"......11..1........" +
+				".....M.M1111M......" +
+				".......1.MMM1......" +
+				"........M1...1....." +
+				".......M......M...." +
+				"......M............" +
+				".....1............." +
 				"..................." +
 				"..................." +
 				"..................." +
@@ -451,16 +452,19 @@ func TestNegaScout(t *testing.T) {
 				"...................",
 			depth:            10,
 			currentPlayer:    Player{0, SymbolPlayerMachine, nil},
-			notExpectedIndex: -1,
+			notExpectedIndex: 102,
+			humanPlayer:      &Player2,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playBoard, func(t *testing.T) {
 			var transpositions = make(stringSet)
-			humanPlayer := Player1
+			if tc.humanPlayer == nil {
+				tc.humanPlayer = &Player1
+			}
 			machinePlayer := MachinePlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			value, index := NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, humanPlayer, setChildren, transpositions)
+			value, index := NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, *tc.humanPlayer, setChildren, transpositions)
 
 			print(value)
 			assert.NotEqual(t, index, tc.notExpectedIndex)
