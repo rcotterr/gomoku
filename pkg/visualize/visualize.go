@@ -246,6 +246,12 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 	}
 	yStart = start
 
+	var humanMovesFirst = false
+	switch game := g.(type) {
+	case *AIGame:
+		humanMovesFirst = game.humanMoveFirst
+	}
+
 	for index, stone := range g.GetPlayBoard() {
 		if string(stone) != playboard.EmptySymbol {
 			op := &ebiten.DrawImageOptions{}
@@ -253,7 +259,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 			mx, my = xStart+width*(mx), yStart+width*(my)
 			op.GeoM.Translate(float64(mx-widthStone/2), float64(my-widthStone/2))
 
-			if string(stone) == playboard.SymbolPlayer1 {
+			if string(stone) == playboard.SymbolPlayer1 || string(stone) == playboard.SymbolPlayerMachine && !humanMovesFirst {
 				screen.DrawImage(WhiteStone, op)
 			} else {
 				screen.DrawImage(BlackStone, op)
