@@ -72,9 +72,9 @@ func Heuristic(state State, symbol string, captures int, capturedIndexes []int) 
 	//num += Heuristic(State{state.Node, capturedIndex, 0, int[]{}}, 0,)
 	//}
 
-	num += float64(1000000 * state.Captures)
+	num += float64(1000000000 * state.Captures)
 	if vulnerable == true {
-		num -= 1000000
+		num -= 1000000000
 	}
 
 	if num < 0 {
