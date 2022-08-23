@@ -7,13 +7,14 @@ import (
 
 func main() {
 	Human := flag.Bool("human", false, "Play against another human player")
+	moveFirst := flag.Bool("moveFirst", false, "Human player moves first")
 	flag.Parse()
 
 	var game visualize.GameInterface
 	if *Human {
 		game = visualize.NewHumanGame()
 	} else {
-		game = visualize.NewAIGame()
+		game = visualize.NewAIGame(*moveFirst)
 	}
 	visualize.Vis(game)
 }

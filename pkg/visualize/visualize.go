@@ -61,14 +61,15 @@ func (g HumanGame) GetTurns() int        { return g.turns }
 
 type AIGame struct {
 	//screen *ebiten.Image
-	playBoard     string
-	humanPlayer   *playboard.Player
-	machinePlayer *playboard.Player
-	machineTurn   bool
-	index         int
-	isOver        bool
-	turns         int
-	forbiddenMove bool
+	playBoard      string
+	humanPlayer    *playboard.Player
+	machinePlayer  *playboard.Player
+	machineTurn    bool
+	index          int
+	isOver         bool
+	turns          int
+	forbiddenMove  bool
+	humanMoveFirst bool
 }
 
 func (g AIGame) GetPlayBoard() string { return g.playBoard }
@@ -323,15 +324,16 @@ func NewHumanGame() GameInterface {
 	return game
 }
 
-func NewAIGame() GameInterface {
+func NewAIGame(humanMoveFirst bool) GameInterface {
 	game := &AIGame{
-		playBoard:     strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
-		humanPlayer:   &playboard.Player1,
-		machinePlayer: &playboard.MachinePlayer,
-		index:         -1,
-		isOver:        false,
-		machineTurn:   true,
-		turns:         0,
+		playBoard:      strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
+		humanPlayer:    &playboard.Player1,
+		machinePlayer:  &playboard.MachinePlayer,
+		index:          -1,
+		isOver:         false,
+		machineTurn:    !humanMoveFirst,
+		turns:          0,
+		humanMoveFirst: humanMoveFirst,
 	}
 	return game
 }
