@@ -459,12 +459,13 @@ func TestNegaScout(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playBoard, func(t *testing.T) {
 			var transpositions = make(stringSet)
+			algo := Algo{tc.depth}
 			if tc.humanPlayer == nil {
 				tc.humanPlayer = &Player1
 			}
 			machinePlayer := MachinePlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			value, index := NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, *tc.humanPlayer, setChildren, transpositions)
+			value, index := algo.NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, *tc.humanPlayer, setChildren, transpositions)
 
 			print(value)
 			assert.NotEqual(t, index, tc.notExpectedIndex)
