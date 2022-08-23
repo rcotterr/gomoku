@@ -308,7 +308,7 @@ func TestGameOver(t *testing.T) {
 			expectedIsOver: false,
 		},
 		{
-			name: "is over",
+			name: "is not over",
 			playboard: "..................." +
 				"..................." +
 				"..................." +
@@ -357,7 +357,7 @@ func TestGameOver(t *testing.T) {
 			index:          139,
 			player1:        &Player{Symbol: SymbolPlayer1},
 			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(159)},
-			expectedIsOver: false,
+			expectedIsOver: true,
 		},
 		{
 			name: "is not over capture",
@@ -394,7 +394,7 @@ func TestGameOver(t *testing.T) {
 				"..........0MM......" +
 				"........0M0........" +
 				".....0.0M..0......." +
-				"......MM0.M0......." +
+				"......MM0..0......." +
 				".......M0M........." +
 				".....0MMMM0........" +
 				".......M.M........." +
@@ -406,11 +406,84 @@ func TestGameOver(t *testing.T) {
 				"..................." +
 				"..................." +
 				"...................",
-			index:          142,
+			index:          141,
 			player1:        &Player{Symbol: SymbolPlayer1},
 			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(142)},
 			expectedIsOver: false,
 		},
+		{
+			name: "is not over capture",
+			playboard: "..................." +
+				"......0...0.0......" +
+				".......M0M.M......." +
+				".....M..M0M........" +
+				"......0MMM........." +
+				"......M.M0M....M..." +
+				".....0.MM.00..0...." +
+				"........0M.000M...." +
+				".........MMM0......" +
+				".........M.0.M....." +
+				"........M0M........" +
+				".......0..........." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:          121,
+			player1:        &Player{Symbol: SymbolPlayer1},
+			player2:        &Player{Symbol: SymbolPlayerMachine},
+			expectedIsOver: false,
+		},
+		{
+			name: "is not over capture",
+			playboard: "..................." +
+				"......0...0.0......" +
+				".......M0M.M......." +
+				".....M..M0M........" +
+				".....00MMM........." +
+				"........M0M....M..." +
+				".....0..M.00..0...." +
+				"........0M.000M...." +
+				".........MMM0......" +
+				".........M.0.M....." +
+				"........M0M........" +
+				".......0..........." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			index:          81,
+			player1:        &Player{Symbol: SymbolPlayer1},
+			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(121)},
+			expectedIsOver: false,
+		},
+		//current play board:
+		//   012345678910 11 12 13 14 15 16 17 18
+		//0  ...................
+		//1  ......0...0.0......
+		//2  .......M0M.M.......
+		//3  .....M..M0M........
+		//4  .....00MMM.........
+		//5  ........M0M....M...
+		//6  .....0..M.00..0....
+		//7  ........0M.000M....
+		//8  .........MMM0......
+		//9  .........M.0.M.....
+		//10 ........M0M........
+		//11 .......0...........
+		//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+		//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+		//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+		//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+		//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+		//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+		//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 	}
 
 	for _, tc := range testCases {

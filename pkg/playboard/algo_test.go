@@ -628,7 +628,7 @@ func TestHeuristic(t *testing.T) {
 				"...................",
 			currentPlayer: Player{Captures: 0, Symbol: SymbolPlayer1},
 			index:         57,
-			expectedNum:   10000,
+			expectedNum:   1000000003,
 		},
 	}
 	for _, tc := range testCases {

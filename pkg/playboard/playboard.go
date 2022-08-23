@@ -393,11 +393,12 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 	}
 
 	if anotherPlayer.IndexAlmostWin != nil {
-		if isFive, _ := checkFive(playBoard, *anotherPlayer.IndexAlmostWin, anotherPlayer.Symbol); isFive {
-			return true // another player, not current win!
-		} else {
-			anotherPlayer.IndexAlmostWin = nil
+		if string(playBoard[*anotherPlayer.IndexAlmostWin]) == anotherPlayer.Symbol {
+			if isFive, _ := checkFive(playBoard, *anotherPlayer.IndexAlmostWin, anotherPlayer.Symbol); isFive {
+				return true // another player, not current win!
+			}
 		}
+		anotherPlayer.IndexAlmostWin = nil
 	}
 
 	if isFive, possibleCaptured := checkFive(playBoard, index, symbolCurrentPlayer); isFive {
