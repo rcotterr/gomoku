@@ -20,9 +20,20 @@ import (
 )
 
 const (
-	width = 12
-	lines = 19
-	start = 30
+	screenWidth  = 1280
+	screenHeight = 720
+
+	cellWidth  = 12
+	boardLines = 19
+	boardStart = 30
+
+	xInfo      = 300
+	yStartInfo = 60
+	diff       = 20
+	yInfo1     = yStartInfo + diff
+	yInfo2     = yStartInfo + 2*diff
+	yInfo3     = yStartInfo + 3*diff
+	yInfo4     = yStartInfo + 4*diff
 )
 
 type GameInterface interface {
@@ -33,18 +44,6 @@ type GameInterface interface {
 	GetPly() int
 	GetForbiddenMove() bool
 	GetIsOver() bool
-}
-
-type MockGame struct{}
-
-func (g *MockGame) Update() error {
-	return nil
-}
-
-func (g *MockGame) Draw(_ *ebiten.Image) {}
-
-func (g *MockGame) Layout(_, _ int) (_, _ int) {
-	return 0, 0
 }
 
 type HumanGame struct {
@@ -82,11 +81,6 @@ func (g AIGame) GetPlayBoard() string   { return g.playBoard }
 func (g AIGame) GetPly() int            { return g.ply }
 func (g AIGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g AIGame) GetIsOver() bool        { return g.isOver }
-
-const (
-	screenWidth  = 1280
-	screenHeight = 720
-)
 
 var _ = ebiten.NewImage(screenWidth, screenHeight)
 
@@ -126,7 +120,7 @@ func init() {
 func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
 	mx, my := ebiten.CursorPosition()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		mx, my = int(math.Round(float64(mx-start)/width)), int(math.Round(float64(my-start)/width))
+		mx, my = int(math.Round(float64(mx-boardStart)/cellWidth)), int(math.Round(float64(my-boardStart)/cellWidth))
 		index := my*playboard.N + mx
 		if index >= 0 && index < playboard.N*playboard.N {
 			return index, nil
@@ -236,19 +230,19 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 	gridColor64 := &color.RGBA{A: 50}
 
 	widthStone := 14
-	xStart, yStart := start, start
-	xEnd, yEnd := xStart+width*(lines-1), yStart+width*(lines-1)
+	xStart, yStart := boardStart, boardStart
+	xEnd, yEnd := xStart+cellWidth*(boardLines-1), yStart+cellWidth*(boardLines-1)
 
-	for i := 0; i < lines; i++ {
+	for i := 0; i < boardLines; i++ {
 		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xStart), float64(yEnd), gridColor64)
-		xStart += width
+		xStart += cellWidth
 	}
-	xStart = start
-	for i := 0; i < lines; i++ {
+	xStart = boardStart
+	for i := 0; i < boardLines; i++ {
 		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xEnd), float64(yStart), gridColor64)
-		yStart += width
+		yStart += cellWidth
 	}
-	yStart = start
+	yStart = boardStart
 
 	var humanMovesFirst = false
 	switch game := g.(type) {
@@ -260,7 +254,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 		if string(stone) != playboard.EmptySymbol {
 			op := &ebiten.DrawImageOptions{}
 			mx, my := index%playboard.N, index/playboard.N
-			mx, my = xStart+width*(mx), yStart+width*(my)
+			mx, my = xStart+cellWidth*(mx), yStart+cellWidth*(my)
 			op.GeoM.Translate(float64(mx-widthStone/2), float64(my-widthStone/2))
 
 			if string(stone) == playboard.SymbolPlayer1 || string(stone) == playboard.SymbolPlayerMachine && !humanMovesFirst {
@@ -272,8 +266,8 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 	}
 
 	ply := g.GetPly()
-	text.Draw(screen, fmt.Sprintf("Turns: %d", ply/2), normalFont, 300, 80, color.Black)
-	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, 300, 100, color.Black)
+	text.Draw(screen, fmt.Sprintf("Turns: %d", ply/2), normalFont, xInfo, yInfo1, color.Black)
+	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, xInfo, yInfo2, color.Black)
 
 	if g.GetForbiddenMove() {
 		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
@@ -287,41 +281,36 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *HumanGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
-	text.Draw(screen, fmt.Sprintf("Turn to play for Player: %s", g.currentPlayer.Symbol), normalFont, 300, 60, color.Black)
+	text.Draw(screen, fmt.Sprintf("Turn to play for Player: %s", g.currentPlayer.Symbol), normalFont, xInfo, yStartInfo, color.Black)
 	var y1, y2 int
 	if g.currentPlayer.Symbol == playboard.SymbolPlayer1 {
-		y1, y2 = 120, 140
+		y1, y2 = yInfo3, yInfo4
 	} else {
-		y1, y2 = 140, 120
+		y1, y2 = yInfo4, yInfo3
 	}
-	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.currentPlayer.Symbol, g.currentPlayer.Captures), normalFont, 300, y1, color.Black)
-	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), normalFont, 300, y2, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.currentPlayer.Symbol, g.currentPlayer.Captures), normalFont, xInfo, y1, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.anotherPlayer.Symbol, g.anotherPlayer.Captures), normalFont, xInfo, y2, color.Black)
 }
 
 // Draw draws the game screen.
 // Draw is called every frame (typically 1/60[s] for 60Hz display).
 func (g *AIGame) Draw(screen *ebiten.Image) {
 	_draw(screen, g)
-	startX := 300
-	startY := 60
-	text.Draw(screen, fmt.Sprintf("AI timer : %s", playboard.AITimer), normalFont, startX, startY, color.Black)
-	startY += 20
-	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, 300, 120, color.Black)
-	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, 300, 140, color.Black)
+	text.Draw(screen, fmt.Sprintf("AI timer : %s", playboard.AITimer), normalFont, xInfo, yStartInfo, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.machinePlayer.Symbol, g.machinePlayer.Captures), normalFont, xInfo, yInfo3, color.Black)
+	text.Draw(screen, fmt.Sprintf("Captures player %s: %d", g.humanPlayer.Symbol, g.humanPlayer.Captures), normalFont, xInfo, yInfo4, color.Black)
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
 // If you don't have to adjust the screen size with the outside size, just return a fixed size.
 func (g *HumanGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 640, 360
-	//return screenWidth/2, screenHeight/2
+	return outsideWidth / 2, outsideHeight / 2
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
 // If you don't have to adjust the screen size with the outside size, just return a fixed size.
 func (g *AIGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 640, 360
-	//return screenWidth/2, screenHeight/2
+	return outsideWidth / 2, outsideHeight / 2
 }
 
 func NewHumanGame() GameInterface {
