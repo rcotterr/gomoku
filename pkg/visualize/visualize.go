@@ -16,7 +16,6 @@ import (
 	"log"
 	"math"
 	"strings"
-	"time"
 )
 
 const (
@@ -26,6 +25,7 @@ const (
 	cellWidth  = 12
 	boardLines = 19
 	boardStart = 30
+	boardEnd   = boardStart + cellWidth*(boardLines-1)
 
 	xInfo      = 300
 	yStartInfo = 60
@@ -34,6 +34,9 @@ const (
 	yInfo2     = yStartInfo + 2*diff
 	yInfo3     = yStartInfo + 3*diff
 	yInfo4     = yStartInfo + 4*diff
+
+	widthStone     = 14
+	widthStoneHalf = widthStone / 2
 )
 
 type GameInterface interface {
@@ -117,13 +120,23 @@ func init() {
 
 }
 
-func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
+func checkValidCoordinate(coord int) bool {
+	return coord >= boardStart-widthStoneHalf && coord <= boardEnd+widthStoneHalf
+}
+
+func normalizeCoordinate(coord int) int {
+	return int(math.Round(float64(coord-boardStart) / cellWidth))
+}
+
+func HumanTurnVis() (int, error) {
 	mx, my := ebiten.CursorPosition()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		mx, my = int(math.Round(float64(mx-boardStart)/cellWidth)), int(math.Round(float64(my-boardStart)/cellWidth))
-		index := my*playboard.N + mx
-		if index >= 0 && index < playboard.N*playboard.N {
-			return index, nil
+		if checkValidCoordinate(mx) && checkValidCoordinate(my) {
+			nx, ny := normalizeCoordinate(mx), normalizeCoordinate(my)
+			index := ny*playboard.N + nx
+			if index >= 0 && index < playboard.N*playboard.N {
+				return index, nil
+			}
 		}
 	}
 	return -1, fmt.Errorf("no step")
@@ -135,7 +148,7 @@ func HumanTurnVis(currentPlayer playboard.Player) (int, error) {
 func (g *HumanGame) Update() error {
 
 	if !g.isOver && !playboard.GameOver(g.playBoard, g.currentPlayer, g.anotherPlayer, g.index) {
-		newIndex, err := HumanTurnVis(*g.currentPlayer)
+		newIndex, err := HumanTurnVis()
 		if err != nil {
 			return nil
 		}
@@ -153,7 +166,6 @@ func (g *HumanGame) Update() error {
 	} else {
 		g.isOver = true
 	}
-	fmt.Println("test update", time.Now())
 
 	return nil
 }
@@ -187,7 +199,7 @@ func (g *AIGame) Update() error {
 			g.ply += 1
 			g.forbiddenMove = false
 		} else {
-			newIndex, err := HumanTurnVis(*g.humanPlayer)
+			newIndex, err := HumanTurnVis()
 			if err != nil {
 				return nil
 			}
@@ -229,9 +241,8 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 	screen.Fill(color.NRGBA{R: 222, G: 184, B: 135, A: 255})
 	gridColor64 := &color.RGBA{A: 50}
 
-	widthStone := 14
 	xStart, yStart := boardStart, boardStart
-	xEnd, yEnd := xStart+cellWidth*(boardLines-1), yStart+cellWidth*(boardLines-1)
+	xEnd, yEnd := boardEnd, boardEnd
 
 	for i := 0; i < boardLines; i++ {
 		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xStart), float64(yEnd), gridColor64)
@@ -341,7 +352,7 @@ func NewAIGame(depth int, humanMoveFirst bool) GameInterface {
 		machineTurn:    !humanMoveFirst,
 		ply:            0,
 		humanMoveFirst: humanMoveFirst,
-		algo:           playboard.Algo{depth},
+		algo:           playboard.Algo{Depth: depth},
 	}
 	return game
 }
