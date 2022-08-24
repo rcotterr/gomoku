@@ -92,6 +92,9 @@ var BlackStone *ebiten.Image
 
 var normalFont font.Face
 
+var colorScreen color.NRGBA
+var colorGrid *color.RGBA
+
 func init() {
 	var err error
 
@@ -118,6 +121,8 @@ func init() {
 		log.Fatal(err)
 	}
 
+	colorScreen = color.NRGBA{R: 222, G: 184, B: 135, A: 255}
+	colorGrid = &color.RGBA{A: 50}
 }
 
 func checkValidCoordinate(coord int) bool {
@@ -237,36 +242,28 @@ func (g *AIGame) Update() error {
 	return nil
 }
 
-func _draw(screen *ebiten.Image, g GameInterface) {
-	screen.Fill(color.NRGBA{R: 222, G: 184, B: 135, A: 255})
-	gridColor64 := &color.RGBA{A: 50}
-
+func _drawGrid(screen *ebiten.Image) {
 	xStart, yStart := boardStart, boardStart
 	xEnd, yEnd := boardEnd, boardEnd
 
 	for i := 0; i < boardLines; i++ {
-		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xStart), float64(yEnd), gridColor64)
+		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xStart), float64(yEnd), colorGrid)
 		xStart += cellWidth
 	}
 	xStart = boardStart
 	for i := 0; i < boardLines; i++ {
-		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xEnd), float64(yStart), gridColor64)
+		ebitenutil.DrawLine(screen, float64(xStart), float64(yStart), float64(xEnd), float64(yStart), colorGrid)
 		yStart += cellWidth
 	}
-	yStart = boardStart
+}
 
-	var humanMovesFirst = false
-	switch game := g.(type) {
-	case *AIGame:
-		humanMovesFirst = game.humanMoveFirst
-	}
-
-	for index, stone := range g.GetPlayBoard() {
+func _drawBoard(screen *ebiten.Image, board string, humanMovesFirst bool) {
+	for index, stone := range board {
 		if string(stone) != playboard.EmptySymbol {
 			op := &ebiten.DrawImageOptions{}
 			mx, my := index%playboard.N, index/playboard.N
-			mx, my = xStart+cellWidth*(mx), yStart+cellWidth*(my)
-			op.GeoM.Translate(float64(mx-widthStone/2), float64(my-widthStone/2))
+			mx, my = boardStart+cellWidth*(mx), boardStart+cellWidth*(my)
+			op.GeoM.Translate(float64(mx-widthStoneHalf), float64(my-widthStoneHalf))
 
 			if string(stone) == playboard.SymbolPlayer1 || string(stone) == playboard.SymbolPlayerMachine && !humanMovesFirst {
 				screen.DrawImage(WhiteStone, op)
@@ -275,17 +272,32 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 			}
 		}
 	}
+}
 
-	ply := g.GetPly()
+func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bool) {
 	text.Draw(screen, fmt.Sprintf("Turns: %d", ply/2), normalFont, xInfo, yInfo1, color.Black)
 	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, xInfo, yInfo2, color.Black)
 
-	if g.GetForbiddenMove() {
-		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, 30, 300, color.Black)
+	if forbiddenMove {
+		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, boardStart, 300, color.Black)
 	}
-	if g.GetIsOver() {
-		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, 30, 300, color.Black)
+	if isOver {
+		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, boardStart, 300, color.Black)
 	}
+}
+
+func _draw(screen *ebiten.Image, g GameInterface) {
+	screen.Fill(colorScreen)
+
+	_drawGrid(screen)
+
+	var humanMovesFirst = false
+	switch game := g.(type) {
+	case *AIGame:
+		humanMovesFirst = game.humanMoveFirst
+	}
+	_drawBoard(screen, g.GetPlayBoard(), humanMovesFirst)
+	_drawAdditionalText(screen, g.GetPly(), g.GetForbiddenMove(), g.GetIsOver())
 }
 
 // Draw draws the game screen.
