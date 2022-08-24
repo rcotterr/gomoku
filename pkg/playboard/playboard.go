@@ -66,6 +66,7 @@ type Player struct {
 	Captures       int
 	Symbol         string
 	IndexAlmostWin *int
+	Winner         bool
 }
 
 var Player1 = Player{Captures: 0, Symbol: SymbolPlayer1}
@@ -378,6 +379,7 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
 			//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
+			player.Winner = true
 			return true
 		}
 	}
@@ -395,6 +397,7 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 	if anotherPlayer.IndexAlmostWin != nil {
 		if string(playBoard[*anotherPlayer.IndexAlmostWin]) == anotherPlayer.Symbol {
 			if isFive, _ := checkFive(playBoard, *anotherPlayer.IndexAlmostWin, anotherPlayer.Symbol); isFive {
+				anotherPlayer.Winner = true
 				return true // another player, not current win!
 			}
 		}
@@ -405,6 +408,7 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 		if possibleCaptured != 0 {
 			currentPlayer.IndexAlmostWin = &index
 		} else {
+			currentPlayer.Winner = true
 			return true
 		}
 	}

@@ -87,6 +87,12 @@ func Heuristic(state State, symbol string, captures int, capturedIndexes []int) 
 func getHeuristic(state State, player Player, opponent Player) (float64, float64) {
 	var h1, h2 float64
 
+	if player.Winner {
+		return 1000000000000, 0
+	}
+	if opponent.Winner {
+		return 0, 1000000000000
+	}
 	h1 = Heuristic(state, player.Symbol, player.Captures, state.capturedIndexes)
 	state.Node = strings.Join([]string{state.Node[:state.index], EmptySymbol, state.Node[state.index+1:]}, "")
 	state, err := PutStone(state.Node, state.index, &opponent)
