@@ -550,7 +550,7 @@ func TestNegaScout(t *testing.T) {
 				"...................",
 			depth:           10,
 			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
-			expectedIndexes: []int{-1},
+			expectedIndexes: []int{163},
 		},
 		{
 			name: "block free three (test 6)",
