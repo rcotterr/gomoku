@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text"
+	"github.com/openlyinc/pointy"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 	"gomoku/pkg/playboard"
@@ -48,6 +49,7 @@ type GameInterface interface {
 	GetPly() int
 	GetForbiddenMove() bool
 	GetIsOver() bool
+	GetWinnerPhrase() *string
 }
 
 type HumanGame struct {
@@ -67,6 +69,17 @@ func (g HumanGame) GetPlayBoard() string   { return g.playBoard }
 func (g HumanGame) GetPly() int            { return g.ply }
 func (g HumanGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g HumanGame) GetIsOver() bool        { return g.isOver }
+func (g HumanGame) GetWinnerPhrase() *string {
+	if g.isOver {
+		if g.currentPlayer.Winner {
+			return pointy.String(getPhraseByPlayer(g.currentPlayer))
+		}
+		if g.anotherPlayer.Winner {
+			return pointy.String(getPhraseByPlayer(g.anotherPlayer))
+		}
+	}
+	return nil
+}
 
 type AIGame struct {
 	//screen *ebiten.Image
@@ -87,6 +100,25 @@ func (g AIGame) GetPlayBoard() string   { return g.playBoard }
 func (g AIGame) GetPly() int            { return g.ply }
 func (g AIGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g AIGame) GetIsOver() bool        { return g.isOver }
+func (g AIGame) GetWinnerPhrase() *string {
+	if g.machinePlayer.Winner {
+		return pointy.String("AI won")
+	}
+	if g.humanPlayer.Winner {
+		return pointy.String("Human won")
+	}
+	return nil
+}
+
+func getPhraseByPlayer(player *playboard.Player) string {
+	if player.Symbol == playboard.SymbolPlayer1 {
+		return "First player won"
+	}
+	if player.Symbol == playboard.SymbolPlayer2 {
+		return "Second player won"
+	}
+	return "Some player won"
+}
 
 var _ = ebiten.NewImage(screenWidth, screenHeight)
 
@@ -294,7 +326,7 @@ func _drawBoard(screen *ebiten.Image, board string, humanMovesFirst bool) {
 	}
 }
 
-func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bool) {
+func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bool, winnerPhrase *string) {
 	text.Draw(screen, fmt.Sprintf("Turns: %d", ply/2), normalFont, xInfo, yInfo1, color.Black)
 	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, xInfo, yInfo2, color.Black)
 
@@ -303,6 +335,9 @@ func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bo
 	}
 	if isOver {
 		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, xInfo, 180, color.Black)
+		if winnerPhrase != nil {
+			text.Draw(screen, fmt.Sprintf(*winnerPhrase), normalFont, xInfo, 200, color.Black)
+		}
 	}
 }
 
@@ -317,7 +352,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 		humanMovesFirst = game.humanMoveFirst
 	}
 	_drawBoard(screen, g.GetPlayBoard(), humanMovesFirst)
-	_drawAdditionalText(screen, g.GetPly(), g.GetForbiddenMove(), g.GetIsOver())
+	_drawAdditionalText(screen, g.GetPly(), g.GetForbiddenMove(), g.GetIsOver(), g.GetWinnerPhrase())
 }
 
 // Draw draws the game screen.
