@@ -151,6 +151,43 @@ func HumanTurnVis() (int, error) {
 
 }
 
+func FPrintPlayer(file *os.File, player *playboard.Player) {
+	fmt.Fprintf(file, "* Player symbol %s\n\tcaptures %d\n", player.Symbol, player.Captures)
+	if player.IndexAlmostWin != nil {
+		fmt.Fprintf(file, "\tindex almost win %d\n", player.IndexAlmostWin)
+	}
+}
+
+func FPrintCurrentState(g GameInterface) {
+	var file *os.File
+	var board string
+	var player1 *playboard.Player
+	var player2 *playboard.Player
+	var machineTurn bool
+
+	switch game := g.(type) {
+	case *AIGame:
+		file = game.file
+		board = game.playBoard
+		player1 = game.machinePlayer
+		player2 = game.humanPlayer
+	case *HumanGame:
+		file = game.file
+		board = game.playBoard
+		player1 = game.currentPlayer
+		player2 = game.anotherPlayer
+	}
+	playboard.FPrintPlayBoard(board, file)
+
+	fmt.Fprintln(file, "Players info: ")
+	FPrintPlayer(file, player1)
+	FPrintPlayer(file, player2)
+
+	if machineTurn {
+		fmt.Fprintln(file, "Algo took ", playboard.AITimer)
+	}
+}
+
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
 func (g *HumanGame) Update() error {
@@ -167,7 +204,7 @@ func (g *HumanGame) Update() error {
 		}
 		g.playBoard = newPlayBoard.Node
 		g.index = newIndex
-		playboard.PrintPlayBoard(g.playBoard)
+		FPrintCurrentState(g)
 		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
 		g.ply += 1
 	} else {
@@ -175,22 +212,6 @@ func (g *HumanGame) Update() error {
 	}
 
 	return nil
-}
-
-func FPrintCurrentState(g *AIGame) {
-	playboard.FPrintPlayBoard(g.playBoard, g.file)
-	fmt.Fprintln(g.file, g.machinePlayer)
-	if g.machinePlayer.IndexAlmostWin != nil {
-		fmt.Fprintln(g.file, g.machinePlayer, *g.machinePlayer.IndexAlmostWin)
-	}
-	fmt.Fprintln(g.file, g.humanPlayer)
-	if g.humanPlayer.IndexAlmostWin != nil {
-		fmt.Fprintln(g.file, g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
-	}
-	if !g.machineTurn {
-		fmt.Fprintln(g.file, "Algo took ", playboard.AITimer)
-	}
-	//position forbidden
 }
 
 // Update proceeds the game state.
