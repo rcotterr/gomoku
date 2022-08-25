@@ -316,10 +316,6 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 		childrenSlice = sortChildren(children, transpositions, humanPlayer, machinePlayer, multiplier)
 	}
 
-	//if depth == 9 && state.index == 258 {
-	//	print("")
-	//}
-
 	for i, child := range childrenSlice {
 		//PrintPlayBoard(state.Node)
 		setNewChildIndexes := copySet(children)
