@@ -58,7 +58,6 @@ type GameInterface interface {
 }
 
 type HumanGame struct {
-	//screen *ebiten.Image
 	playBoard     string
 	currentPlayer *playboard.Player
 	anotherPlayer *playboard.Player
@@ -87,7 +86,6 @@ func (g HumanGame) GetWinnerPhrase() *string {
 }
 
 type AIGame struct {
-	//screen *ebiten.Image
 	playBoard      string
 	humanPlayer    *playboard.Player
 	machinePlayer  *playboard.Player
@@ -155,10 +153,6 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//f, err := opentype.Parse(goitalic.TTF)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 	const dpi = 72
 	normalFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    12,
@@ -293,11 +287,7 @@ func (g *AIGame) Update() error {
 	if !playboard.GameOver(g.playBoard, g.machinePlayer, g.humanPlayer, g.index) {
 		if g.machineTurn {
 			g.index = g.algo.GetIndex(g.playBoard, *g.machinePlayer, *g.humanPlayer)
-			newPlayBoard, err := playboard.PutStone(g.playBoard, g.index, g.machinePlayer)
-			if err != nil {
-				fmt.Println("Invalid machine algo!!!!!", err)
-				log.Fatal()
-			}
+			newPlayBoard, _ := playboard.PutStone(g.playBoard, g.index, g.machinePlayer)
 			g.playBoard = newPlayBoard.Node
 			g.machineTurn = false
 			g.ply += 1
