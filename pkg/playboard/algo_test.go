@@ -578,6 +578,32 @@ func TestNegaScout(t *testing.T) {
 			expectedIndexes: []int{101},
 			humanPlayer:     &Player{Symbol: SymbolPlayer2, Captures: 2},
 		},
+		{
+			name: "(test 8)",
+			playBoard: "..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				".......M..........." +
+				"........1.1........" +
+				".......M111M......." +
+				".........M1........" +
+				".........M.M......." +
+				".........M........." +
+				".........M........." +
+				".........1........." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			depth:           10,
+			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
+			expectedIndexes: []int{200},
+			humanPlayer:     &Player{Symbol: SymbolPlayer2, Captures: 2},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playBoard, func(t *testing.T) {
