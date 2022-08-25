@@ -122,9 +122,9 @@ func getChildren(node string, index int, currentPlayer Player, childIndexesSet i
 	defer TimeTrack(time.Now(), "getChildren", RunTimesgetChildren, AllTimesgetChildren)
 	var children []State
 
-	if index != -1 {
-		UpdateSetChildren(index, node, childIndexesSet)
-	}
+	//if index != -1 {
+	//	UpdateSetChildren(index, node, childIndexesSet)
+	//}
 
 	for k := range childIndexesSet {
 		stateChild, err := PutStone(node, k, &currentPlayer)
@@ -164,6 +164,17 @@ func copySet(children []State) intSet {
 	return setNewChildIndexes
 }
 
+func copySet2(children intSet) intSet {
+	defer TimeTrack(time.Now(), "copySet2", RunTimesCopySet, AllTimesCopySet)
+	setNewChildIndexes := make(intSet)
+
+	for index, val := range children {
+		setNewChildIndexes[index] = val
+	}
+
+	return setNewChildIndexes
+}
+
 type Child struct {
 	h1    float64
 	h2    float64
@@ -175,11 +186,11 @@ func sortChildren(children []State, transpositions stringSet, player Player, opp
 	var new_ []Child
 
 	for _, childState := range children {
-		_, ok := transpositions[childState.Node]
-		if ok {
-			t += 1
-			continue
-		}
+		//_, ok := transpositions[childState.Node]
+		//if ok {
+		//	t += 1
+		//	continue
+		//}
 		transpositions[childState.Node] = member
 		h1, h2 := getHeuristic(State{childState.Node, childState.index, childState.Captures, childState.capturedIndexes}, player, opponent)
 		new_ = append(new_, Child{h1, h2, math.Max(h1, h2), State{childState.Node, childState.index, childState.Captures, childState.capturedIndexes}})
@@ -308,6 +319,9 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 	var children []State
 	var childrenSlice []Child
 
+	if state.index != -1 {
+		UpdateSetChildren(state.index, state.Node, childIndexesSet)
+	}
 	if multiplier == 1 {
 		children = getChildren(state.Node, state.index, machinePlayer, childIndexesSet)
 		childrenSlice = sortChildren(children, transpositions, machinePlayer, humanPlayer, multiplier)
@@ -317,8 +331,8 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 	}
 
 	for i, child := range childrenSlice {
-		//PrintPlayBoard(state.Node)
-		setNewChildIndexes := copySet(children)
+		//setNewChildIndexes := copySet(children)
+		setNewChildIndexes := copySet2(childIndexesSet)
 		eval, _ := a.NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, machinePlayer, humanPlayer, setNewChildIndexes, transpositions)
 		eval = -eval
 
