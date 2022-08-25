@@ -15,6 +15,7 @@ import (
 	_ "image/png"
 	"log"
 	"math"
+	"os"
 	"strings"
 )
 
@@ -59,6 +60,7 @@ type HumanGame struct {
 	ply           int
 	forbiddenMove bool
 	algo          playboard.Algo
+	file          *os.File
 }
 
 func (g HumanGame) GetPlayBoard() string   { return g.playBoard }
@@ -78,6 +80,7 @@ type AIGame struct {
 	forbiddenMove  bool
 	humanMoveFirst bool
 	algo           playboard.Algo
+	file           *os.File
 }
 
 func (g AIGame) GetPlayBoard() string   { return g.playBoard }
@@ -159,12 +162,11 @@ func (g *HumanGame) Update() error {
 		}
 		newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.currentPlayer)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err) //TODO position forbidden
 			return nil
 		}
 		g.playBoard = newPlayBoard.Node
 		g.index = newIndex
-		//g.currentPlayer.Captures += newPlayBoard.Captures // its in PutStone
 		playboard.PrintPlayBoard(g.playBoard)
 		g.currentPlayer, g.anotherPlayer = g.anotherPlayer, g.currentPlayer
 		g.ply += 1
@@ -173,6 +175,22 @@ func (g *HumanGame) Update() error {
 	}
 
 	return nil
+}
+
+func FPrintCurrentState(g *AIGame) {
+	playboard.FPrintPlayBoard(g.playBoard, g.file)
+	fmt.Fprintln(g.file, g.machinePlayer)
+	if g.machinePlayer.IndexAlmostWin != nil {
+		fmt.Fprintln(g.file, g.machinePlayer, *g.machinePlayer.IndexAlmostWin)
+	}
+	fmt.Fprintln(g.file, g.humanPlayer)
+	if g.humanPlayer.IndexAlmostWin != nil {
+		fmt.Fprintln(g.file, g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
+	}
+	if !g.machineTurn {
+		fmt.Fprintln(g.file, "Algo took ", playboard.AITimer)
+	}
+	//position forbidden
 }
 
 // Update proceeds the game state.
@@ -191,18 +209,10 @@ func (g *AIGame) Update() error {
 				log.Fatal()
 			}
 			g.playBoard = newPlayBoard.Node
-			playboard.PrintPlayBoard(g.playBoard) //TO DO delete print
-			fmt.Println(g.machinePlayer)
-			if g.machinePlayer.IndexAlmostWin != nil {
-				fmt.Println(g.machinePlayer, *g.machinePlayer.IndexAlmostWin)
-			}
-			fmt.Println(g.humanPlayer)
-			if g.humanPlayer.IndexAlmostWin != nil {
-				fmt.Println(g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
-			}
 			g.machineTurn = false
 			g.ply += 1
 			g.forbiddenMove = false
+			FPrintCurrentState(g)
 		} else {
 			newIndex, err := HumanTurnVis()
 			if err != nil {
@@ -210,30 +220,19 @@ func (g *AIGame) Update() error {
 			}
 			newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.humanPlayer)
 			if err != nil {
-				switch e := err.(type) {
+				switch err.(type) {
 				case *playboard.PositionForbiddenError:
-					log.Println(e)
 					g.forbiddenMove = true
-					//TO DO add position is busy?
-				default:
-					log.Println(e)
 				}
+				fmt.Fprintln(g.file, err)
 				return nil
 			}
 			g.playBoard = newPlayBoard.Node
 			g.index = newIndex
-			playboard.PrintPlayBoard(g.playBoard)
-			fmt.Println(g.machinePlayer)
-			if g.machinePlayer.IndexAlmostWin != nil {
-				fmt.Println(g.machinePlayer, *g.machinePlayer.IndexAlmostWin)
-			}
-			fmt.Println(g.humanPlayer)
-			if g.humanPlayer.IndexAlmostWin != nil {
-				fmt.Println(g.humanPlayer, *g.humanPlayer.IndexAlmostWin)
-			}
 			g.machineTurn = true
 			g.ply += 1
 			g.forbiddenMove = false
+			FPrintCurrentState(g)
 		}
 	} else {
 		g.isOver = true
@@ -336,7 +335,7 @@ func (g *AIGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHei
 	return outsideWidth / 2, outsideHeight / 2
 }
 
-func NewHumanGame() GameInterface {
+func NewHumanGame(file *os.File) GameInterface {
 	game := &HumanGame{
 		playBoard:     strings.Repeat(playboard.EmptySymbol, playboard.N*playboard.N),
 		currentPlayer: &playboard.Player1,
@@ -344,11 +343,12 @@ func NewHumanGame() GameInterface {
 		index:         -1,
 		isOver:        false,
 		ply:           0,
+		file:          file,
 	}
 	return game
 }
 
-func NewAIGame(depth int, humanMoveFirst bool) GameInterface {
+func NewAIGame(depth int, humanMoveFirst bool, file *os.File) GameInterface {
 	var humanPlayer playboard.Player
 	if humanMoveFirst {
 		humanPlayer = playboard.Player1
@@ -365,6 +365,7 @@ func NewAIGame(depth int, humanMoveFirst bool) GameInterface {
 		ply:            0,
 		humanMoveFirst: humanMoveFirst,
 		algo:           playboard.Algo{Depth: depth},
+		file:           file,
 	}
 	return game
 }

@@ -48,7 +48,7 @@ func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Durati
 func TimeTrackPrint(start time.Time, name string) {
 	elapsed := time.Since(start)
 	AITimer = elapsed
-	fmt.Println(File, "%s took %s\n", name, elapsed)
+	//fmt.Println(File, "%s took %s\n", name, elapsed)
 }
 
 const N = 19
@@ -120,6 +120,24 @@ func PrintPlayBoard(playBoard string) {
 		fmt.Print(string(val), "  ")
 	}
 	fmt.Println()
+}
+
+func FPrintPlayBoard(playBoard string, file *os.File) {
+	fmt.Fprintln(file, "current play board:")
+
+	fmt.Fprint(file, "   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18")
+	for i, val := range playBoard {
+		if i%N == 0 {
+			fmt.Fprintln(file)
+			if i/N > 9 {
+				fmt.Fprint(file, i/N, " ")
+			} else {
+				fmt.Fprint(file, i/N, "  ")
+			}
+		}
+		fmt.Fprint(file, string(val), "  ")
+	}
+	fmt.Fprintln(file)
 }
 
 func ParsePositions(text string) (*Pos, error) {
