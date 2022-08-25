@@ -36,6 +36,11 @@ const (
 	yInfo2     = yStartInfo + 2*diff
 	yInfo3     = yStartInfo + 3*diff
 	yInfo4     = yStartInfo + 4*diff
+	yInfo6     = yStartInfo + 6*diff
+
+	xInfoOver  = 15
+	yInfoOver  = 100
+	yInfoOver1 = yInfoOver + 30
 
 	widthStone     = 14
 	widthStoneHalf = widthStone / 2
@@ -126,9 +131,13 @@ var WhiteStone *ebiten.Image
 var BlackStone *ebiten.Image
 
 var normalFont font.Face
+var bigFont font.Face
+var middleFont font.Face
 
 var colorScreen color.NRGBA
 var colorGrid *color.RGBA
+var colorHalfBlack *color.NRGBA
+var colorRed *color.RGBA
 
 func init() {
 	var err error
@@ -146,6 +155,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//f, err := opentype.Parse(goitalic.TTF)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	const dpi = 72
 	normalFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
 		Size:    12,
@@ -156,8 +169,28 @@ func init() {
 		log.Fatal(err)
 	}
 
+	bigFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    40,
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	middleFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    20,
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	colorScreen = color.NRGBA{R: 222, G: 184, B: 135, A: 255}
 	colorGrid = &color.RGBA{A: 50}
+	colorHalfBlack = &color.NRGBA{R: 0, G: 0, B: 0, A: 128}
+	colorRed = &color.RGBA{R: 255, G: 0, B: 0, A: 128}
 }
 
 func checkValidCoordinate(coord int) bool {
@@ -231,7 +264,11 @@ func (g *HumanGame) Update() error {
 		}
 		newPlayBoard, err := playboard.PutStone(g.playBoard, newIndex, g.currentPlayer)
 		if err != nil {
-			fmt.Println(err) //TODO position forbidden
+			switch err.(type) {
+			case *playboard.PositionForbiddenError:
+				g.forbiddenMove = true
+			}
+			fmt.Fprintln(g.file, err)
 			return nil
 		}
 		g.playBoard = newPlayBoard.Node
@@ -331,12 +368,12 @@ func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bo
 	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, xInfo, yInfo2, color.Black)
 
 	if forbiddenMove {
-		text.Draw(screen, fmt.Sprintf("Move is forbidden\n(double free three)"), normalFont, xInfo, 180, color.Black)
+		text.Draw(screen, fmt.Sprintf("Move is forbidden\n(double free three)"), normalFont, xInfo, yInfo6, colorRed)
 	}
 	if isOver {
-		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, xInfo, 180, color.Black)
+		text.Draw(screen, fmt.Sprintf("Game over"), bigFont, xInfoOver, yInfoOver, colorHalfBlack)
 		if winnerPhrase != nil {
-			text.Draw(screen, fmt.Sprintf(*winnerPhrase), normalFont, xInfo, 200, color.Black)
+			text.Draw(screen, fmt.Sprintf(*winnerPhrase), middleFont, xInfoOver, yInfoOver1, colorHalfBlack)
 		}
 	}
 }
