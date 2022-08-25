@@ -39,7 +39,7 @@ func TestGetChildren(t *testing.T) {
 				"...................",
 			index:              23,
 			setChildrenIndexes: intSet{},
-			currentPlayer:      Player{0, SymbolPlayerMachine, nil},
+			currentPlayer:      Player{Symbol: SymbolPlayerMachine},
 			expectedChildren:   []int{24, 43, 42, 41, 22, 3, 4, 5},
 		},
 		{
@@ -65,7 +65,7 @@ func TestGetChildren(t *testing.T) {
 				"...................",
 			index:              23,
 			setChildrenIndexes: intSet{4: member, 5: member, 6: member, 23: member, 25: member, 22: member, 40: member, 42: member, 59: member, 60: member, 61: member},
-			currentPlayer:      Player{0, SymbolPlayerMachine, nil},
+			currentPlayer:      Player{Symbol: SymbolPlayerMachine},
 			expectedChildren:   []int{43, 42, 22, 3, 4, 5, 6, 25, 40, 59, 60, 61},
 		},
 		{
@@ -90,7 +90,7 @@ func TestGetChildren(t *testing.T) {
 				"..................." +
 				"...................",
 			index:              23,
-			currentPlayer:      Player{0, SymbolPlayerMachine, nil},
+			currentPlayer:      Player{Symbol: SymbolPlayerMachine},
 			setChildrenIndexes: intSet{},
 			expectedChildren:   []int{43, 42, 22, 3, 4, 5},
 		},
@@ -524,7 +524,7 @@ func TestNegaScout(t *testing.T) {
 				"..................." +
 				"...................",
 			depth:           10,
-			currentPlayer:   Player{0, SymbolPlayerMachine, nil},
+			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
 			expectedIndexes: []int{220},
 		},
 	}
