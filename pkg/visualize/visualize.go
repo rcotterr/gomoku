@@ -20,16 +20,16 @@ import (
 )
 
 const (
-	screenWidth  = 1280
-	screenHeight = 720
+	screenWidth  = 800
+	screenHeight = 472
 
 	cellWidth  = 12
 	boardLines = 19
-	boardStart = 30
+	boardStart = 10
 	boardEnd   = boardStart + cellWidth*(boardLines-1)
 
-	xInfo      = 300
-	yStartInfo = 60
+	xInfo      = 250
+	yStartInfo = 30
 	diff       = 20
 	yInfo1     = yStartInfo + diff
 	yInfo2     = yStartInfo + 2*diff
@@ -299,10 +299,10 @@ func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bo
 	text.Draw(screen, fmt.Sprintf("Ply: %d", ply), normalFont, xInfo, yInfo2, color.Black)
 
 	if forbiddenMove {
-		text.Draw(screen, fmt.Sprintf("Move is forbidden because of double free three"), normalFont, boardStart, 300, color.Black)
+		text.Draw(screen, fmt.Sprintf("Move is forbidden\n(double free three)"), normalFont, xInfo, 180, color.Black)
 	}
 	if isOver {
-		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, boardStart, 300, color.Black)
+		text.Draw(screen, fmt.Sprintf("Game over!"), normalFont, xInfo, 180, color.Black)
 	}
 }
 
