@@ -97,9 +97,12 @@ func TestGetChildren(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
-
-			children := getChildren(tc.playboard, tc.index, tc.currentPlayer, tc.setChildrenIndexes)
-
+			machinePlayer := tc.currentPlayer //TO DO refactor
+			humanPlayer := Player2            //TO DO refactor
+			UpdateSetChildren(tc.index, tc.playboard, tc.setChildrenIndexes)
+			children := getChildren(
+				State{tc.playboard, tc.index, 0, []int{}, machinePlayer, humanPlayer},
+				tc.currentPlayer, tc.setChildrenIndexes)
 			assert.Equal(t, len(tc.expectedChildren), len(children))
 			for _, val := range tc.expectedChildren {
 				found := false
@@ -664,11 +667,12 @@ func TestNegaScout(t *testing.T) {
 			if tc.humanPlayer == nil {
 				tc.humanPlayer = &Player1
 			}
-			machinePlayer := MachinePlayer
+			machinePlayer := tc.currentPlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			value, index := algo.NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, *tc.humanPlayer, setChildren, transpositions)
+			value, index := algo.NegaScout(State{tc.playBoard, -1, 0, []int{}, machinePlayer, *tc.humanPlayer}, tc.depth, math.Inf(-1), math.Inf(1), 1, setChildren, transpositions)
 
 			print(value)
+			PrintPlayBoard(tc.playBoard)
 			assert.Contains(t, tc.expectedIndexes, index)
 		})
 	}

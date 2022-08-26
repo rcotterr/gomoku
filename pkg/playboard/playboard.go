@@ -273,12 +273,19 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-func PutStone(playBoard string, index int, currentPlayer *Player) (State, CustomError) {
+type Info struct {
+	Node            string
+	index           int
+	Captures        int
+	capturedIndexes []int
+}
+
+func PutStone(playBoard string, index int, currentPlayer *Player) (Info, CustomError) {
 
 	//index := pos.Y*N + pos.X
 	//fmt.Println(index)
 	if string(playBoard[index]) != EmptySymbol {
-		return State{}, fmt.Errorf("position is busy")
+		return Info{}, fmt.Errorf("position is busy")
 	}
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
@@ -290,10 +297,10 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, Custom
 		}
 		currentPlayer.Captures += captures
 	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
-		return State{}, &PositionForbiddenError{}
+		return Info{}, &PositionForbiddenError{}
 	}
 
-	return State{newPlayBoard, index, captures, arrIndexes}, nil
+	return Info{newPlayBoard, index, captures, arrIndexes}, nil
 }
 
 func PossibleCapturedStone(node string, index int, stepCount int, symbol string) int {
