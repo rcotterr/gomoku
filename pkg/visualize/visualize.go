@@ -51,6 +51,7 @@ type GameInterface interface {
 	Draw(screen *ebiten.Image)
 	Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int)
 	GetPlayBoard() string
+	GetIndex() int
 	GetPly() int
 	GetForbiddenMove() bool
 	GetIsOver() bool
@@ -70,6 +71,7 @@ type HumanGame struct {
 }
 
 func (g HumanGame) GetPlayBoard() string   { return g.playBoard }
+func (g HumanGame) GetIndex() int          { return g.index }
 func (g HumanGame) GetPly() int            { return g.ply }
 func (g HumanGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g HumanGame) GetIsOver() bool        { return g.isOver }
@@ -100,6 +102,7 @@ type AIGame struct {
 }
 
 func (g AIGame) GetPlayBoard() string   { return g.playBoard }
+func (g AIGame) GetIndex() int          { return g.index }
 func (g AIGame) GetPly() int            { return g.ply }
 func (g AIGame) GetForbiddenMove() bool { return g.forbiddenMove }
 func (g AIGame) GetIsOver() bool        { return g.isOver }
@@ -136,6 +139,7 @@ var colorScreen color.NRGBA
 var colorGrid *color.RGBA
 var colorHalfBlack *color.NRGBA
 var colorRed *color.RGBA
+var colorGrey *color.RGBA
 
 func init() {
 	var err error
@@ -185,6 +189,7 @@ func init() {
 	colorGrid = &color.RGBA{A: 50}
 	colorHalfBlack = &color.NRGBA{R: 0, G: 0, B: 0, A: 128}
 	colorRed = &color.RGBA{R: 255, G: 0, B: 0, A: 128}
+	colorGrey = &color.RGBA{169, 169, 169, 255}
 }
 
 func checkValidCoordinate(coord int) bool {
@@ -336,7 +341,22 @@ func _drawGrid(screen *ebiten.Image) {
 	}
 }
 
-func _drawBoard(screen *ebiten.Image, board string, humanMovesFirst bool) {
+func _drawCircle(screen *ebiten.Image, x, y int, clr color.Color) {
+	radius64 := float64(widthStoneHalf / 4)
+	minAngle := math.Acos(1 - 1/radius64)
+
+	for angle := float64(0); angle <= 360; angle += minAngle {
+		xDelta := radius64 * math.Cos(angle)
+		yDelta := radius64 * math.Sin(angle)
+
+		x1 := int(math.Round(float64(x) + xDelta))
+		y1 := int(math.Round(float64(y) + yDelta))
+
+		screen.Set(x1, y1, clr)
+	}
+}
+
+func _drawBoard(screen *ebiten.Image, board string, humanMovesFirst bool, lastIndex int) {
 	for index, stone := range board {
 		if string(stone) != playboard.EmptySymbol {
 			op := &ebiten.DrawImageOptions{}
@@ -351,6 +371,9 @@ func _drawBoard(screen *ebiten.Image, board string, humanMovesFirst bool) {
 			}
 		}
 	}
+	mx, my := lastIndex%playboard.N, lastIndex/playboard.N
+	mx, my = boardStart+cellWidth*(mx), boardStart+cellWidth*(my)
+	_drawCircle(screen, mx, my, colorGrey)
 }
 
 func _drawAdditionalText(screen *ebiten.Image, ply int, forbiddenMove, isOver bool, winnerPhrase *string) {
@@ -378,7 +401,7 @@ func _draw(screen *ebiten.Image, g GameInterface) {
 	case *AIGame:
 		humanMovesFirst = game.humanMoveFirst
 	}
-	_drawBoard(screen, g.GetPlayBoard(), humanMovesFirst)
+	_drawBoard(screen, g.GetPlayBoard(), humanMovesFirst, g.GetIndex())
 	_drawAdditionalText(screen, g.GetPly(), g.GetForbiddenMove(), g.GetIsOver(), g.GetWinnerPhrase())
 }
 
