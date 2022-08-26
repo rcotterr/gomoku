@@ -84,28 +84,28 @@ func Heuristic(state State, symbol string, captures int, capturedIndexes []int) 
 	return num
 }
 
-func getHeuristic(state State) (float64, float64) {
+func getHeuristic(state State, player Player, opponent Player) (float64, float64) {
 	var h1, h2 float64
 
-	if state.machinePlayer.Winner {
+	if player.Winner {
 		return 1000000000000, 0
 	}
-	if state.humanPlayer.Winner {
+	if opponent.Winner {
 		return 0, 1000000000000
 	}
-	h1 = Heuristic(state, state.machinePlayer.Symbol, state.machinePlayer.Captures, state.capturedIndexes)
+	h1 = Heuristic(state, player.Symbol, player.Captures, state.capturedIndexes)
 	state.Node = strings.Join([]string{state.Node[:state.index], EmptySymbol, state.Node[state.index+1:]}, "")
-	info, err := PutStone(state.Node, state.index, &state.humanPlayer)
+	info, err := PutStone(state.Node, state.index, &opponent)
 	newState := State{
 		Node:            info.Node,
 		index:           info.index,
 		Captures:        info.Captures,
 		capturedIndexes: info.capturedIndexes,
-		machinePlayer:   state.machinePlayer,
-		humanPlayer:     state.humanPlayer,
+		machinePlayer:   player,
+		humanPlayer:     opponent,
 	}
 	if err == nil {
-		h2 = Heuristic(newState, state.humanPlayer.Symbol, state.humanPlayer.Captures, state.capturedIndexes)
+		h2 = Heuristic(newState, opponent.Symbol, opponent.Captures, state.capturedIndexes)
 	} else {
 		h2 = 0
 	}
@@ -241,7 +241,7 @@ func sortChildren(children []State, transpositions stringSet, player Player, opp
 		//	continue
 		//}
 		transpositions[childState.Node] = member
-		h1, h2 := getHeuristic(childState)
+		h1, h2 := getHeuristic(childState, player, opponent)
 		new_ = append(new_, Child{h1, h2, math.Max(h1, h2), childState})
 	}
 
@@ -283,7 +283,7 @@ type State struct {
 func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, childIndexesSet intSet, transpositions stringSet) (float64, int) {
 	//PrintPlayBoard(state.Node)
 	if depth == 0 || GameOver(state.Node, &state.machinePlayer, &state.humanPlayer, state.index) {
-		h1, h2 := getHeuristic(state)
+		h1, h2 := getHeuristic(state, state.machinePlayer, state.humanPlayer)
 
 		if h1 == 1000000000000 {
 			return float64(multiplier) * (h1 + (float64(depth) * 0.1)), state.index
