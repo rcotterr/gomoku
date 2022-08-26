@@ -361,8 +361,10 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 				}
 			}
 		} else if maxEval > 0 {
-			if child.Value > childrenSlice[i+1].Value || child.h1 > childrenSlice[i+1].h1 {
-				break
+			if i+1 < len(childrenSlice) {
+				if child.Value > childrenSlice[i+1].Value || child.h1 > childrenSlice[i+1].h1 {
+					break
+				}
 			}
 		}
 	}
