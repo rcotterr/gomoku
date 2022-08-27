@@ -101,13 +101,13 @@ func TestGetChildren(t *testing.T) {
 			humanPlayer := Player2            //TO DO refactor
 			UpdateSetChildren(tc.index, tc.playboard, tc.setChildrenIndexes)
 			children := getChildren(
-				State{tc.playboard, tc.index, 0, []int{}, machinePlayer, humanPlayer},
+				State{Move{tc.playboard, tc.index, 0, []int{}}, machinePlayer, humanPlayer},
 				tc.currentPlayer, tc.setChildrenIndexes)
 			assert.Equal(t, len(tc.expectedChildren), len(children))
 			for _, val := range tc.expectedChildren {
 				found := false
 				for _, state := range children {
-					if state.index == val {
+					if state.move.index == val {
 						found = true
 						break
 					}
@@ -695,10 +695,10 @@ func TestNegaScout(t *testing.T) {
 			}
 			machinePlayer := tc.currentPlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			value, index := algo.NegaScout(State{tc.playBoard, -1, 0, []int{}, machinePlayer, *tc.humanPlayer}, tc.depth, math.Inf(-1), math.Inf(1), 1, setChildren, transpositions)
+			value, index := algo.NegaScout(State{Move{tc.playBoard, -1, 0, []int{}}, machinePlayer, *tc.humanPlayer}, tc.depth, math.Inf(-1), math.Inf(1), 1, setChildren, transpositions)
 
 			print(value)
-			PrintPlayBoard(tc.playBoard)
+			//PrintPlayBoard(tc.playBoard)
 			assert.Contains(t, tc.expectedIndexes, index)
 		})
 	}
@@ -846,7 +846,7 @@ func TestHeuristic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			num := Heuristic(State{Node: tc.playboard, index: tc.index}, tc.currentPlayer.Symbol, 0, []int{})
+			num := Heuristic(State{move: Move{Node: tc.playboard, index: tc.index}}, tc.currentPlayer.Symbol, 0, []int{})
 
 			assert.Equal(t, tc.expectedNum, num)
 		})
