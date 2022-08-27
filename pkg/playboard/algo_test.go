@@ -845,7 +845,7 @@ func TestHeuristic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			num := Heuristic(State{move: Move{Node: tc.playboard, index: tc.index}}, tc.currentPlayer.Symbol, 0, []int{})
+			num := Heuristic(State{move: Move{Node: tc.playboard, index: tc.index}}, tc.currentPlayer.Symbol, 0)
 
 			assert.Equal(t, tc.expectedNum, num)
 		})
