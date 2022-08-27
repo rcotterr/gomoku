@@ -693,7 +693,7 @@ func TestNegaScout(t *testing.T) {
 			}
 			machinePlayer := tc.currentPlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			_, index := algo.NegaScout(State{Move{tc.playBoard, -1, 0, []int{}}, machinePlayer, *tc.humanPlayer}, tc.depth, math.Inf(-1), math.Inf(1), 1, setChildren)
+			_, index := algo.AlphaBeta(State{Move{tc.playBoard, -1, 0, []int{}}, machinePlayer, *tc.humanPlayer}, tc.depth, math.Inf(-1), math.Inf(1), 1, setChildren)
 
 			assert.Contains(t, tc.expectedIndexes, index)
 		})

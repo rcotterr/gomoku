@@ -201,7 +201,7 @@ type State struct {
 	humanPlayer   Player
 }
 
-func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, childIndexesSet intSet) (float64, int) {
+func (a Algo) AlphaBeta(state State, depth int, alpha float64, beta float64, multiplier int, childIndexesSet intSet) (float64, int) {
 	if depth == 0 || GameOver(state.move.Node, &state.machinePlayer, &state.humanPlayer, state.move.index) {
 		h1, h2 := getHeuristic(state, state.machinePlayer, state.humanPlayer)
 
@@ -234,7 +234,7 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 
 	for i, child := range childrenSlice {
 		setNewChildIndexes := copySet(childIndexesSet)
-		eval, _ := a.NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, setNewChildIndexes)
+		eval, _ := a.AlphaBeta(child.State, depth-1, -beta, -alpha, -multiplier, setNewChildIndexes)
 		eval = -eval
 
 		if eval > maxEval {
@@ -282,7 +282,7 @@ func (a Algo) GetIndex(playBoard string, machinePlayer Player, humanPlayer Playe
 		return 9*19 + 9
 	}
 
-	_, index := a.NegaScout(State{Move{playBoard, -1, 0, []int{}}, machinePlayer, humanPlayer}, a.Depth, math.Inf(-1), math.Inf(1), 1, setChildren)
+	_, index := a.AlphaBeta(State{Move{playBoard, -1, 0, []int{}}, machinePlayer, humanPlayer}, a.Depth, math.Inf(-1), math.Inf(1), 1, setChildren)
 
 	return index
 }
