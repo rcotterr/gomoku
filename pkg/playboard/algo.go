@@ -10,10 +10,8 @@ import (
 
 type void struct{}
 type intSet map[int]void
-type stringSet map[string]void
 
 var member void
-var t = 0
 
 var setRulesChildren = map[int]ConditionFn{
 	1:      ConditionHorizontal,
@@ -131,32 +129,14 @@ func getChildren(state State, currentPlayer Player, childIndexesSet intSet) []St
 	defer TimeTrack(time.Now(), "getChildren", RunTimesgetChildren, AllTimesgetChildren)
 	var children []State
 
-	//if index != -1 {
-	//	UpdateSetChildren(index, node, childIndexesSet)
-	//}
-
-	//var updatePlayer *Player
-	//
-	//if currentPlayer.Symbol == SymbolPlayerMachine{
-	//	updatePlayer = &state.machinePlayer
-	//} else {
-	//	updatePlayer = &state.humanPlayer
-	//}
-
 	for k := range childIndexesSet {
-		//var updatePlayer *Player
-		//
-		//if currentPlayer.Symbol == SymbolPlayerMachine{
-		//	updatePlayer = &state.machinePlayer
-		//} else {
-		//	updatePlayer = &state.humanPlayer
-		//}
 		var updatePlayer Player
 		if currentPlayer.Symbol == SymbolPlayerMachine {
 			updatePlayer = state.machinePlayer
 		} else {
 			updatePlayer = state.humanPlayer
 		}
+		//updatePlayer = currentPlayer
 
 		infoChild, err := PutStone(state.move.Node, k, &updatePlayer)
 
@@ -170,19 +150,34 @@ func getChildren(state State, currentPlayer Player, childIndexesSet intSet) []St
 		} else {
 			machinePlayer = state.machinePlayer
 			humanPlayer = currentPlayer
-			machinePlayer.Captures = updatePlayer.Captures
+			humanPlayer.Captures = updatePlayer.Captures
 		}
 		newStateChild := State{move: infoChild,
 			machinePlayer: machinePlayer,
 			humanPlayer:   humanPlayer,
 		}
 		if err == nil {
+			//var machinePlayer Player
+			//var humanPlayer Player
+			//
+			//if currentPlayer.Symbol == SymbolPlayerMachine {
+			//	machinePlayer = updatePlayer
+			//	machinePlayer.Captures = updatePlayer.Captures
+			//	humanPlayer = state.humanPlayer
+			//} else {
+			//	machinePlayer = state.machinePlayer
+			//	humanPlayer = updatePlayer
+			//	humanPlayer.Captures = updatePlayer.Captures
+			//}
+			//newStateChild := State{move: infoChild,
+			//	machinePlayer: machinePlayer,
+			//	humanPlayer:   humanPlayer,
+			//}
+
 			children = append(children, newStateChild)
 			//children[k] = newPlayBoard
 		}
 	}
-
-	//TO DO cache
 
 	return children
 }
@@ -230,16 +225,10 @@ type Child struct {
 	State State
 }
 
-func sortChildren(children []State, transpositions stringSet, player Player, opponent Player, multiplier int) []Child {
+func sortChildren(children []State, player Player, opponent Player, multiplier int) []Child {
 	var new_ []Child
 
 	for _, childState := range children {
-		//_, ok := transpositions[childState.Node]
-		//if ok {
-		//	t += 1
-		//	continue
-		//}
-		transpositions[childState.move.Node] = member
 		h1, h2 := getHeuristic(childState, player, opponent)
 		new_ = append(new_, Child{h1, h2, math.Max(h1, h2), childState})
 	}
@@ -280,7 +269,7 @@ type State struct {
 	humanPlayer   Player
 }
 
-func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, childIndexesSet intSet, transpositions stringSet) (float64, int) {
+func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, multiplier int, childIndexesSet intSet) (float64, int) {
 	//PrintPlayBoard(state.Node)
 	if depth == 0 || GameOver(state.move.Node, &state.machinePlayer, &state.humanPlayer, state.move.index) {
 		h1, h2 := getHeuristic(state, state.machinePlayer, state.humanPlayer)
@@ -304,16 +293,16 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 	}
 	if multiplier == 1 {
 		children = getChildren(state, state.machinePlayer, childIndexesSet)
-		childrenSlice = sortChildren(children, transpositions, state.machinePlayer, state.humanPlayer, multiplier)
+		childrenSlice = sortChildren(children, state.machinePlayer, state.humanPlayer, multiplier)
 	} else {
 		children = getChildren(state, state.humanPlayer, childIndexesSet)
-		childrenSlice = sortChildren(children, transpositions, state.humanPlayer, state.machinePlayer, multiplier)
+		childrenSlice = sortChildren(children, state.humanPlayer, state.machinePlayer, multiplier)
 	}
 
 	for i, child := range childrenSlice {
 		//setNewChildIndexes := copySet(children)
 		setNewChildIndexes := copySet2(childIndexesSet)
-		eval, _ := a.NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, setNewChildIndexes, transpositions)
+		eval, _ := a.NegaScout(child.State, depth-1, -beta, -alpha, -multiplier, setNewChildIndexes)
 		eval = -eval
 
 		if eval > maxEval {
@@ -394,9 +383,7 @@ func (a Algo) GetIndex(playBoard string, machinePlayer Player, humanPlayer Playe
 		return 9*19 + 9
 	}
 
-	var transpositions = make(stringSet)
-
-	_, index := a.NegaScout(State{Move{playBoard, -1, 0, []int{}}, machinePlayer, humanPlayer}, a.Depth, math.Inf(-1), math.Inf(1), 1, setChildren, transpositions)
+	_, index := a.NegaScout(State{Move{playBoard, -1, 0, []int{}}, machinePlayer, humanPlayer}, a.Depth, math.Inf(-1), math.Inf(1), 1, setChildren)
 
 	return index
 }
