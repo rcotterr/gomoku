@@ -463,27 +463,6 @@ func TestGameOver(t *testing.T) {
 			player2:        &Player{Symbol: SymbolPlayerMachine, IndexAlmostWin: pointy.Int(121)},
 			expectedIsOver: false,
 		},
-		//current play board:
-		//   012345678910 11 12 13 14 15 16 17 18
-		//0  ...................
-		//1  ......0...0.0......
-		//2  .......M0M.M.......
-		//3  .....M..M0M........
-		//4  .....00MMM.........
-		//5  ........M0M....M...
-		//6  .....0..M.00..0....
-		//7  ........0M.000M....
-		//8  .........MMM0......
-		//9  .........M.0.M.....
-		//10 ........M0M........
-		//11 .......0...........
-		//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-		//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-		//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-		//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-		//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-		//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-		//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 	}
 
 	for _, tc := range testCases {
@@ -498,30 +477,6 @@ func TestGameOver(t *testing.T) {
 		})
 	}
 }
-
-//Algo  16.0033ms
-//current play board:
-//0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5......0............
-//6.......M.0.........
-//7.......MMM0........
-//8.......M.M0........
-//9........MMM........
-//10 .......M.M.0M......
-//11 ......0..0M........
-//12 ......M....M.......
-//13 ............0......
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//test update 2022-08-07 02:44:54.2089829 +0300 MSK m=+43.783781401
 
 func TestIsCapture(t *testing.T) {
 	testCases := []struct {
@@ -837,24 +792,14 @@ func TestIsCapture(t *testing.T) {
 			numCaptures, arrIndexes := isCaptured(tc.playboard, tc.index, tc.currentPlayer)
 
 			assert.Equal(t, tc.numCaptures, numCaptures)
-			//b := reflect.DeepEqual(tc.expectedIndexes, arrIndexes)
 			indexSet := make(intSet)
 			for _, elem := range arrIndexes {
 				indexSet[elem] = member
 			}
-			//reflect.DeepEqual(tc.expectedIndexes, indexSet)
 			assert.Equal(t, tc.expectedIndexes, indexSet)
-			//assert.Equal(t, true, b)
-			//assert.Equal(t, true, b)
-			//if isCapture {
-			//	assert.Equal(t, tc.expectedIndex1, *index1)
-			//	assert.Equal(t, tc.expectedIndex2, *index2)
-			//}
 		})
 	}
 }
-
-//TO DO name not playBoard in fail
 
 func TestPutStone(t *testing.T) {
 	testCases := []struct {
@@ -1431,25 +1376,3 @@ func TestPossibleCapturedStone(t *testing.T) {
 		})
 	}
 }
-
-// Machine wins?
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  0  .  .  .  .  .  .  0  .  .  .  .  .
-//6  .  .  .  .  .  .  .  M  .  0  .  0  M  .  .  .  .  .  .
-//7  .  .  .  .  .  .  .  0  M  .  .  .  .  .  .  .  .  .  .
-//8  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//9  .  .  .  .  .  .  .  .  0  0  M  0  .  .  .  .  .  .  .
-//10 .  .  .  .  .  .  .  .  .  0  .  M  .  .  .  .  .  .  .
-//11 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .

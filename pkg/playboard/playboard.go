@@ -10,18 +10,6 @@ import (
 
 var AITimer time.Duration
 
-var File *os.File
-
-var RunTimesHeuristic *int
-var RunTimesIsOver *int
-var RunTimesgetChildren *int
-var RunTimesCopySet *int
-
-var AllTimesHeuristic *time.Duration
-var AllTimesIsOver *time.Duration
-var AllTimesgetChildren *time.Duration
-var AllTimesCopySet *time.Duration
-
 type CustomError interface {
 	Error() string
 }
@@ -32,23 +20,9 @@ func (e *PositionForbiddenError) Error() string {
 	return fmt.Sprintf("position is forbidden")
 }
 
-func TimeTrack(start time.Time, name string, runTimes *int, allTime *time.Duration) {
-	elapsed := time.Since(start)
-	if runTimes != nil && allTime != nil {
-		*runTimes += 1
-		*allTime += elapsed
-	}
-	_, _ = fmt.Fprintf(File, "%s took %s\n", name, elapsed)
-	if name == "alphaBeta depth {5}" {
-		_, _ = fmt.Fprintf(File, "All took RunTimesHeuristic:%d, %s;\n RunTimesIsOver:%d, %s\n RunTimesgetChildren:%d, %s\n, CopySet: %d, %s\n",
-			*RunTimesHeuristic, AllTimesHeuristic, *RunTimesIsOver, AllTimesIsOver, *RunTimesgetChildren, AllTimesgetChildren, *RunTimesCopySet, AllTimesCopySet)
-	}
-}
-
-func TimeTrackPrint(start time.Time, name string) {
+func TimeTrackPrint(start time.Time) {
 	elapsed := time.Since(start)
 	AITimer = elapsed
-	//fmt.Println(File, "%s took %s\n", name, elapsed)
 }
 
 const N = 19
@@ -172,10 +146,9 @@ func checkCapturedByCondition(step int, condition ConditionFn, playBoard string,
 		symbol1 := string(playBoard[index1])
 		symbol2 := string(playBoard[index2])
 
-		if symbol1 != currentPlayer && symbol1 != EmptySymbol && symbol2 != currentPlayer && symbol2 != EmptySymbol { //TO DO check another player
+		if symbol1 != currentPlayer && symbol1 != EmptySymbol && symbol2 != currentPlayer && symbol2 != EmptySymbol {
 			return true, &index1, &index2
 		}
-		//fmt.Println(index1, index2)
 	}
 	return false, nil, nil
 }
@@ -210,7 +183,7 @@ func isFreeThree(step int, condition ConditionFn, playBoard string, index int, c
 	startIndex := index + -1*numOfCheckFreeThree*step
 	endIndex := index + numOfCheckFreeThree*step
 	countStones := 0
-	for startIndex < 0 || !condition(startIndex, index) { // TO DO for diagonal
+	for startIndex < 0 || !condition(startIndex, index) {
 		startIndex += step
 	}
 	for endIndex >= N*N || !condition(endIndex, index) {
@@ -241,7 +214,7 @@ func isFreeThree(step int, condition ConditionFn, playBoard string, index int, c
 		}
 	}
 	if countStones >= numOfCheckFreeThree {
-		for _, j := range []int{startIndex - step, endIndex + step} { // TO DO different for diagonal
+		for _, j := range []int{startIndex - step, endIndex + step} {
 			if !(condition(j, index) && j >= 0 && j < N*N && string(playBoard[j]) == EmptySymbol) {
 				return false
 			}
@@ -273,27 +246,32 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-func PutStone(playBoard string, index int, currentPlayer *Player) (State, CustomError) {
+type Move struct {
+	Node            string
+	index           int
+	Captures        int
+	capturedIndexes []int
+}
 
-	//index := pos.Y*N + pos.X
-	//fmt.Println(index)
+func PutStone(playBoard string, index int, currentPlayer *Player) (Move, CustomError) {
+
 	if string(playBoard[index]) != EmptySymbol {
-		return State{}, fmt.Errorf("position is busy")
+		return Move{}, fmt.Errorf("position is busy")
 	}
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
 
-	captures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
+	captures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol)
 	if captures > 0 {
 		for _, capturedIndex := range arrIndexes {
 			newPlayBoard = strings.Join([]string{newPlayBoard[:capturedIndex], EmptySymbol, newPlayBoard[capturedIndex+1:]}, "")
 		}
 		currentPlayer.Captures += captures
 	} else if isForbidden(newPlayBoard, index, currentPlayer.Symbol) {
-		return State{}, &PositionForbiddenError{}
+		return Move{}, &PositionForbiddenError{}
 	}
 
-	return State{newPlayBoard, index, captures, arrIndexes}, nil
+	return Move{newPlayBoard, index, captures, arrIndexes}, nil
 }
 
 func PossibleCapturedStone(node string, index int, stepCount int, symbol string) int {
@@ -318,7 +296,7 @@ func PossibleCapturedStone(node string, index int, stepCount int, symbol string)
 					condition(indexNeighAnother, index) && indexNeighAnother >= 0 && indexNeighAnother < N*N {
 					symbolNextAfterNeigh := string(node[indexNextAfterNeigh])
 					symbolNeighAnother := string(node[indexNeighAnother])
-					if symbolNextAfterNeigh != symbol && symbolNeighAnother != symbol && symbolNextAfterNeigh != symbolNeighAnother { //both symbolNextAfterNeigh and symbolNeighAnother are [anotherPlayerSymbol, .]
+					if symbolNextAfterNeigh != symbol && symbolNeighAnother != symbol && symbolNextAfterNeigh != symbolNeighAnother {
 						return 1
 					}
 				}
@@ -341,7 +319,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 			startIndex = tmpIndex
 			possibleCaptures += PossibleCapturedStone(node, startIndex, step, symbol)
 		} else if condition(tmpIndex, index) {
-			if string(node[tmpIndex]) == EmptySymbol { //TO DO check empty according to condition
+			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
 			}
 			break
@@ -384,26 +362,20 @@ func checkFive(playBoard string, index int, symbol string) (bool, int) {
 	}
 
 	return false, 0
-	//TO DO add possibleCapture than not win
-	// 6 stones and capture only in 6
 }
 
-func GameOver(playBoard string, player1 *Player, player2 *Player, index int) bool { //TO DO change func without print
-	defer TimeTrack(time.Now(), "GameOver", RunTimesIsOver, AllTimesIsOver)
+func GameOver(playBoard string, player1 *Player, player2 *Player, index int) bool {
 
 	if index == -1 {
 		return false //first launch
 	}
 	for _, player := range []*Player{player1, player2} {
 		if player != nil && player.Captures >= numOfCaptureStoneToWin/numOfCaptureStone {
-			//fmt.Println("Game is over, CONGRATULATIONS TO PLAYER ", player.Symbol)
 			player.Winner = true
 			return true
 		}
 	}
-	//if string(playBoard[index]) == EmptySymbol {
-	//	return false
-	//}
+
 	symbolCurrentPlayer := string(playBoard[index])
 	var currentPlayer, anotherPlayer *Player
 	if player1.Symbol == symbolCurrentPlayer {
@@ -416,7 +388,7 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 		if string(playBoard[*anotherPlayer.IndexAlmostWin]) == anotherPlayer.Symbol {
 			if isFive, _ := checkFive(playBoard, *anotherPlayer.IndexAlmostWin, anotherPlayer.Symbol); isFive {
 				anotherPlayer.Winner = true
-				return true // another player, not current win!
+				return true
 			}
 		}
 		anotherPlayer.IndexAlmostWin = nil
@@ -432,7 +404,6 @@ func GameOver(playBoard string, player1 *Player, player2 *Player, index int) boo
 	}
 
 	if containEmpty := strings.Contains(playBoard, EmptySymbol); !containEmpty {
-		//fmt.Println("Game is over, no space left, both players win")
 		return true
 	}
 	return false

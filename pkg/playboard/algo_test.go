@@ -97,19 +97,21 @@ func TestGetChildren(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
-
-			children := getChildren(tc.playboard, tc.index, tc.currentPlayer, tc.setChildrenIndexes)
-
+			machinePlayer := tc.currentPlayer
+			humanPlayer := Player2
+			UpdateSetChildren(tc.index, tc.playboard, tc.setChildrenIndexes)
+			children := getChildren(
+				State{Move{tc.playboard, tc.index, 0, []int{}}, machinePlayer, humanPlayer},
+				tc.currentPlayer, tc.setChildrenIndexes)
 			assert.Equal(t, len(tc.expectedChildren), len(children))
 			for _, val := range tc.expectedChildren {
 				found := false
 				for _, state := range children {
-					if state.index == val {
+					if state.move.index == val {
 						found = true
 						break
 					}
 				}
-				//_, found := children[val]
 				assert.Equal(t, found, true, fmt.Sprintf("val is %d", val))
 			}
 
@@ -324,7 +326,7 @@ func TestNegaScout(t *testing.T) {
 			index:           114,
 			depth:           10,
 			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
-			expectedIndexes: []int{-1},
+			expectedIndexes: []int{236, 182},
 		},
 		{
 			name: "block 5",
@@ -349,7 +351,7 @@ func TestNegaScout(t *testing.T) {
 				"...................",
 			depth:           10,
 			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
-			expectedIndexes: []int{103}, //expected 103
+			expectedIndexes: []int{103},
 		},
 		{
 			name: "make five",
@@ -449,7 +451,7 @@ func TestNegaScout(t *testing.T) {
 				"...................",
 			depth:           10,
 			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
-			expectedIndexes: []int{123},
+			expectedIndexes: []int{123, 146}, //not 102
 			humanPlayer:     &Player2,
 		},
 		{
@@ -627,8 +629,34 @@ func TestNegaScout(t *testing.T) {
 				"...................",
 			depth:           10,
 			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
-			expectedIndexes: []int{200},
+			expectedIndexes: []int{101},
 			humanPlayer:     &Player{Symbol: SymbolPlayer1, Captures: 1},
+		},
+		{
+			name: "make three (game-history 10)",
+			playBoard: "..................." +
+				"..........0........" +
+				".........M........." +
+				"........M.........." +
+				".....0.M..........." +
+				"....M.M............" +
+				"...M0000M.........." +
+				"......M.0.........." +
+				"........00........." +
+				".......0..0........" +
+				"......M..0.MMM0...." +
+				"...........0......." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			depth:           10,
+			currentPlayer:   Player{Symbol: SymbolPlayerMachine, Captures: 3},
+			expectedIndexes: []int{135},
+			humanPlayer:     &Player{Symbol: SymbolPlayer1, Captures: 4},
 		},
 		{
 			name: "(test 11)",
@@ -659,125 +687,18 @@ func TestNegaScout(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.playBoard, func(t *testing.T) {
-			var transpositions = make(stringSet)
 			algo := Algo{tc.depth}
 			if tc.humanPlayer == nil {
 				tc.humanPlayer = &Player1
 			}
-			machinePlayer := MachinePlayer
+			machinePlayer := tc.currentPlayer
 			setChildren := getAllIndexChildren(tc.playBoard)
-			value, index := algo.NegaScout(State{tc.playBoard, -1, 0, []int{}}, tc.depth, math.Inf(-1), math.Inf(1), 1, machinePlayer, *tc.humanPlayer, setChildren, transpositions)
+			_, index := algo.NegaScout(State{Move{tc.playBoard, -1, 0, []int{}}, machinePlayer, *tc.humanPlayer}, tc.depth, math.Inf(-1), math.Inf(1), 1, setChildren)
 
-			print(value)
 			assert.Contains(t, tc.expectedIndexes, index)
 		})
 	}
 }
-
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  .  0  .  .  .  .  .  .  .  .  .  .  .
-//6  .  .  .  .  .  .  0  M  .  .  .  .  .  .  .  .  .  .  .
-//7  .  .  .  .  .  .  0  M  0  .  .  .  .  .  .  .  .  .  .
-//8  .  .  .  .  .  .  0  M  .  0  .  .  .  .  .  .  .  .  .
-//9  .  .  .  .  .  .  .  .  .  M  0  .  .  .  .  .  .  .  .
-//10 .  .  .  .  .  .  .  .  .  .  M  M  .  .  .  .  .  .  .
-//11 .  .  .  .  .  .  .  .  .  .  .  0  .  .  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  0  0  ?  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  .  .  M  M  .  .  .  .  .  .  .  .  .
-//6  .  .  .  .  .  .  .  .  M  0  M  0  .  .  .  .  .  .  .
-//7  .  .  .  .  .  .  .  .  M  0  .  .  .  .  .  .  .  .  .
-//8  .  .  .  .  .  .  .  .  0  0  0  M  0  .  .  .  .  .  .
-//9  .  .  .  .  .  .  0  M  M  M  .  0  M  .  .  .  .  .  .
-//10 .  .  .  .  .  .  .  .  .  .  .  .  0  0  .  .  .  .  .
-//11 .  .  .  .  .  .  .  .  .  .  0  .  .  M  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  0  0  M  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  .  .  M  M  .  .  .  .  .  .  .  .  .
-//6  .  .  .  .  .  .  .  .  M  .  M  0  .  .  .  ?  .  .  .
-//7  .  .  .  .  .  .  .  .  M  0  0  .  .  .  0  .  .  .  .
-//8  .  .  .  .  .  .  .  .  0  0  0  M  0  0  .  .  .  .  .
-//9  .  .  .  .  .  .  0  M  M  M  .  0  0  .  .  .  .  .  .
-//10 .  .  .  .  .  .  .  .  .  .  .  0  0  0  M  .  .  .  .
-//11 .  .  .  .  .  .  .  .  .  .  0  .  .  M  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//6  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .  M  .  .  .
-//7  .  .  .  .  .  .  .  .  .  0  ?  .  .  .  0  .  .  .  .
-//8  .  .  .  .  .  .  .  .  .  M  0  .  0  0  .  .  .  .  .
-//9  .  .  .  .  .  .  .  .  .  M  0  0  0  0  M  .  .  .  .
-//10 .  .  .  .  .  .  .  .  0  M  .  0  M  .  .  .  .  .  .
-//11 .  .  .  .  .  .  .  .  .  M  M  .  .  .  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  M  0  .  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-
-//   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18
-//0  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//1  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//2  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//3  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//4  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//5  .  .  .  .  .  .  .  .  .  .  .  .  M  .  .  .  .  .  .
-//6  .  .  .  .  .  .  .  .  0  .  M  0  .  .  .  .  .  .  .
-//7  .  .  .  .  .  .  M  .  .  .  0  .  .  .  .  .  .  .  .
-//8  .  .  .  .  .  .  M  0  .  0  .  M  .  .  .  .  .  .  .
-//9  .  .  .  .  .  .  .  .  0  .  0  .  .  .  .  .  .  .  .
-//10 .  .  .  .  .  M  0  .  M  M  .  0  .  .  .  .  .  .  .
-//11 .  .  .  .  .  .  .  0  .  M  0  .  M  .  .  .  .  .  .
-//12 .  .  .  .  .  .  .  .  .  M  M  .  .  .  .  .  .  .  .
-//13 .  .  .  .  .  .  .  .  .  0  .  ?  .  .  .  .  .  .  .
-//14 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//15 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//16 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//17 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
-//18 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 
 func TestHeuristic(t *testing.T) {
 	testCases := []struct {
@@ -816,7 +737,7 @@ func TestHeuristic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			num := Heuristic(State{Node: tc.playboard, index: tc.index}, tc.currentPlayer.Symbol, 0, []int{})
+			num := Heuristic(Move{Node: tc.playboard, index: tc.index}, tc.currentPlayer.Symbol, 0)
 
 			assert.Equal(t, tc.expectedNum, num)
 		})
