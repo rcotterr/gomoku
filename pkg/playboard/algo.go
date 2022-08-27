@@ -229,7 +229,15 @@ func sortChildren(children []State, player Player, opponent Player, multiplier i
 	var new_ []Child
 
 	for _, childState := range children {
-		h1, h2 := getHeuristic(childState, player, opponent)
+		var h1, h2 float64
+		if childState.move.index == 135 {
+			print("")
+		}
+		if multiplier == 1 {
+			h1, h2 = getHeuristic(childState, childState.machinePlayer, childState.humanPlayer)
+		} else {
+			h1, h2 = getHeuristic(childState, childState.humanPlayer, childState.machinePlayer)
+		}
 		new_ = append(new_, Child{h1, h2, math.Max(h1, h2), childState})
 	}
 
@@ -312,10 +320,6 @@ func (a Algo) NegaScout(state State, depth int, alpha float64, beta float64, mul
 				maxIndex = child.State.move.index
 			}
 		}
-
-		//if depth == a.Depth {
-		//	PrintPlayBoard(state.Node)
-		//}
 
 		alpha = math.Max(alpha, eval)
 
