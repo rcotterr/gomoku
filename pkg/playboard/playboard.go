@@ -273,15 +273,15 @@ func isForbidden(playBoard string, index int, currentPlayer string) bool {
 	return false
 }
 
-func PutStone(playBoard string, index int, currentPlayer *Player) (State, CustomError) {
+func PutStone(state State, index int, currentPlayer *Player) (State, CustomError) {
 
 	//index := pos.Y*N + pos.X
 	//fmt.Println(index)
-	if string(playBoard[index]) != EmptySymbol {
+	if string(state.node[index]) != EmptySymbol {
 		return State{}, fmt.Errorf("position is busy")
 	}
 
-	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
+	newPlayBoard := strings.Join([]string{state.node[:index], currentPlayer.Symbol, state.node[index+1:]}, "")
 
 	captures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
 	if captures > 0 {
@@ -293,7 +293,11 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (State, Custom
 		return State{}, &PositionForbiddenError{}
 	}
 
-	return State{newPlayBoard, index, captures, arrIndexes}, nil
+	if currentPlayer.Symbol == state.machinePlayer.Symbol {
+		return State{newPlayBoard, index, captures, arrIndexes, *currentPlayer, state.humanPlayer}, nil
+	} else {
+		return State{newPlayBoard, index, captures, arrIndexes, state.machinePlayer, state.humanPlayer}, nil
+	}
 }
 
 func PossibleCapturedStone(node string, index int, stepCount int, symbol string) int {
