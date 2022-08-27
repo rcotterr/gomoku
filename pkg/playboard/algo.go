@@ -163,11 +163,13 @@ func getChildren(state State, currentPlayer Player, childIndexesSet intSet) []St
 		var humanPlayer Player
 
 		if currentPlayer.Symbol == SymbolPlayerMachine {
-			machinePlayer = updatePlayer
+			machinePlayer = currentPlayer
+			machinePlayer.Captures = updatePlayer.Captures
 			humanPlayer = state.humanPlayer
 		} else {
 			machinePlayer = state.machinePlayer
-			humanPlayer = updatePlayer
+			humanPlayer = currentPlayer
+			machinePlayer.Captures = updatePlayer.Captures
 		}
 		newStateChild := State{
 			Node:            infoChild.Node,

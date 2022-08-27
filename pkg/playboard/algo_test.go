@@ -634,6 +634,32 @@ func TestNegaScout(t *testing.T) {
 			humanPlayer:     &Player{Symbol: SymbolPlayer1, Captures: 1},
 		},
 		{
+			name: "make three (game-history 10)",
+			playBoard: "..................." +
+				"..........0........" +
+				".........M........." +
+				"........M.........." +
+				".....0.M..........." +
+				"....M.M............" +
+				"...M0000M.........." +
+				"......M.0.........." +
+				"........00........." +
+				".......0..0........" +
+				"......M..0.MMM0...." +
+				"...........0......." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"..................." +
+				"...................",
+			depth:           10,
+			currentPlayer:   Player{Symbol: SymbolPlayerMachine, Captures: 3},
+			expectedIndexes: []int{135},
+			humanPlayer:     &Player{Symbol: SymbolPlayer1, Captures: 4},
+		},
+		{
 			name: "(test 11)",
 			playBoard: "..................." +
 				"..................." +
