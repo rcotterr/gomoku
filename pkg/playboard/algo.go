@@ -282,7 +282,9 @@ func (a Algo) GetIndex(playBoard string, machinePlayer Player, humanPlayer Playe
 		return 9*19 + 9
 	}
 
-	_, index := a.AlphaBeta(State{Move{playBoard, -1, 0, []int{}}, machinePlayer, humanPlayer}, a.Depth, math.Inf(-1), math.Inf(1), 1, setChildren)
+	state := State{Move{playBoard, -1, 0, []int{}}, machinePlayer, humanPlayer}
+
+	_, index := a.AlphaBeta(state, a.Depth, math.Inf(-1), math.Inf(1), 1, setChildren)
 
 	return index
 }
