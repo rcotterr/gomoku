@@ -146,7 +146,7 @@ func checkCapturedByCondition(step int, condition ConditionFn, playBoard string,
 		symbol1 := string(playBoard[index1])
 		symbol2 := string(playBoard[index2])
 
-		if symbol1 != currentPlayer && symbol1 != EmptySymbol && symbol2 != currentPlayer && symbol2 != EmptySymbol { //TO DO check another player
+		if symbol1 != currentPlayer && symbol1 != EmptySymbol && symbol2 != currentPlayer && symbol2 != EmptySymbol {
 			return true, &index1, &index2
 		}
 	}
@@ -183,7 +183,7 @@ func isFreeThree(step int, condition ConditionFn, playBoard string, index int, c
 	startIndex := index + -1*numOfCheckFreeThree*step
 	endIndex := index + numOfCheckFreeThree*step
 	countStones := 0
-	for startIndex < 0 || !condition(startIndex, index) { // TO DO for diagonal
+	for startIndex < 0 || !condition(startIndex, index) {
 		startIndex += step
 	}
 	for endIndex >= N*N || !condition(endIndex, index) {
@@ -214,7 +214,7 @@ func isFreeThree(step int, condition ConditionFn, playBoard string, index int, c
 		}
 	}
 	if countStones >= numOfCheckFreeThree {
-		for _, j := range []int{startIndex - step, endIndex + step} { // TO DO different for diagonal
+		for _, j := range []int{startIndex - step, endIndex + step} {
 			if !(condition(j, index) && j >= 0 && j < N*N && string(playBoard[j]) == EmptySymbol) {
 				return false
 			}
@@ -261,7 +261,7 @@ func PutStone(playBoard string, index int, currentPlayer *Player) (Move, CustomE
 
 	newPlayBoard := strings.Join([]string{playBoard[:index], currentPlayer.Symbol, playBoard[index+1:]}, "")
 
-	captures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol) //TO DO more than one capture
+	captures, arrIndexes := isCaptured(newPlayBoard, index, currentPlayer.Symbol)
 	if captures > 0 {
 		for _, capturedIndex := range arrIndexes {
 			newPlayBoard = strings.Join([]string{newPlayBoard[:capturedIndex], EmptySymbol, newPlayBoard[capturedIndex+1:]}, "")
@@ -296,7 +296,7 @@ func PossibleCapturedStone(node string, index int, stepCount int, symbol string)
 					condition(indexNeighAnother, index) && indexNeighAnother >= 0 && indexNeighAnother < N*N {
 					symbolNextAfterNeigh := string(node[indexNextAfterNeigh])
 					symbolNeighAnother := string(node[indexNeighAnother])
-					if symbolNextAfterNeigh != symbol && symbolNeighAnother != symbol && symbolNextAfterNeigh != symbolNeighAnother { //both symbolNextAfterNeigh and symbolNeighAnother are [anotherPlayerSymbol, .]
+					if symbolNextAfterNeigh != symbol && symbolNeighAnother != symbol && symbolNextAfterNeigh != symbolNeighAnother {
 						return 1
 					}
 				}
@@ -319,7 +319,7 @@ func CountInRow(node string, index int, step int, condition ConditionFn, symbol 
 			startIndex = tmpIndex
 			possibleCaptures += PossibleCapturedStone(node, startIndex, step, symbol)
 		} else if condition(tmpIndex, index) {
-			if string(node[tmpIndex]) == EmptySymbol { //TO DO check empty according to condition
+			if string(node[tmpIndex]) == EmptySymbol {
 				empty += 1
 			}
 			break
@@ -364,7 +364,7 @@ func checkFive(playBoard string, index int, symbol string) (bool, int) {
 	return false, 0
 }
 
-func GameOver(playBoard string, player1 *Player, player2 *Player, index int) bool { //TO DO change func without print
+func GameOver(playBoard string, player1 *Player, player2 *Player, index int) bool {
 
 	if index == -1 {
 		return false //first launch

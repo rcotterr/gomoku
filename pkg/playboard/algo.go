@@ -121,49 +121,25 @@ func getChildren(state State, currentPlayer Player, childIndexesSet intSet) []St
 	var children []State
 
 	for k := range childIndexesSet {
-		var updatePlayer Player
-		if currentPlayer.Symbol == SymbolPlayerMachine {
-			updatePlayer = state.machinePlayer
-		} else {
-			updatePlayer = state.humanPlayer
-		}
-		//updatePlayer = currentPlayer
+		updatePlayer := currentPlayer
 
 		infoChild, err := PutStone(state.move.Node, k, &updatePlayer)
 
-		var machinePlayer Player
-		var humanPlayer Player
-
-		if currentPlayer.Symbol == SymbolPlayerMachine {
-			machinePlayer = currentPlayer
-			machinePlayer.Captures = updatePlayer.Captures
-			humanPlayer = state.humanPlayer
-		} else {
-			machinePlayer = state.machinePlayer
-			humanPlayer = currentPlayer
-			humanPlayer.Captures = updatePlayer.Captures
-		}
-		newStateChild := State{move: infoChild,
-			machinePlayer: machinePlayer,
-			humanPlayer:   humanPlayer,
-		}
 		if err == nil {
-			//var machinePlayer Player
-			//var humanPlayer Player
-			//
-			//if currentPlayer.Symbol == SymbolPlayerMachine {
-			//	machinePlayer = updatePlayer
-			//	machinePlayer.Captures = updatePlayer.Captures
-			//	humanPlayer = state.humanPlayer
-			//} else {
-			//	machinePlayer = state.machinePlayer
-			//	humanPlayer = updatePlayer
-			//	humanPlayer.Captures = updatePlayer.Captures
-			//}
-			//newStateChild := State{move: infoChild,
-			//	machinePlayer: machinePlayer,
-			//	humanPlayer:   humanPlayer,
-			//}
+			var newStateChild State
+			if currentPlayer.Symbol == SymbolPlayerMachine {
+				newStateChild = State{
+					move:          infoChild,
+					machinePlayer: updatePlayer,
+					humanPlayer:   state.humanPlayer,
+				}
+			} else {
+				newStateChild = State{
+					move:          infoChild,
+					machinePlayer: state.machinePlayer,
+					humanPlayer:   updatePlayer,
+				}
+			}
 
 			children = append(children, newStateChild)
 		}
