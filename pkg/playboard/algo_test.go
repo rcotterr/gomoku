@@ -326,7 +326,7 @@ func TestNegaScout(t *testing.T) {
 			index:           114,
 			depth:           10,
 			currentPlayer:   Player{Symbol: SymbolPlayerMachine},
-			expectedIndexes: []int{236},
+			expectedIndexes: []int{236, 182},
 		},
 		{
 			name: "block 5",
@@ -737,7 +737,7 @@ func TestHeuristic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.playboard, func(t *testing.T) {
 
-			num := Heuristic(State{move: Move{Node: tc.playboard, index: tc.index}}, tc.currentPlayer.Symbol, 0)
+			num := Heuristic(Move{Node: tc.playboard, index: tc.index}, tc.currentPlayer.Symbol, 0)
 
 			assert.Equal(t, tc.expectedNum, num)
 		})

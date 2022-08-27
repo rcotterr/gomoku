@@ -23,12 +23,12 @@ var setRulesChildren = map[int]ConditionFn{
 	-N + 1: ConditionForwardDiagonal,
 }
 
-func Heuristic(state State, symbol string, captures int) float64 {
+func Heuristic(move Move, symbol string, captures int) float64 {
 	vulnerable := false
 	num := 0.0
 
 	if symbol == "" {
-		symbol = string(state.move.Node[state.move.index])
+		symbol = string(move.Node[move.index])
 	}
 
 	setRules := map[int]ConditionFn{
@@ -39,7 +39,7 @@ func Heuristic(state State, symbol string, captures int) float64 {
 	}
 
 	for step, condition := range setRules {
-		count, halfFree, free, _ := CountInRow(state.move.Node, state.move.index, step, condition, symbol)
+		count, halfFree, free, _ := CountInRow(move.Node, move.index, step, condition, symbol)
 		if count >= 5 || captures >= 5 {
 			return 1000000000000
 		} else if count == 4 && free {
@@ -62,7 +62,7 @@ func Heuristic(state State, symbol string, captures int) float64 {
 		}
 	}
 
-	num += float64(1000000000 * state.move.Captures)
+	num += float64(1000000000 * move.Captures)
 	if vulnerable == true {
 		num -= 1000000000
 	}
@@ -83,20 +83,11 @@ func getHeuristic(state State, player Player, opponent Player) (float64, float64
 	if opponent.Winner {
 		return 0, 1000000000000
 	}
-	h1 = Heuristic(state, player.Symbol, player.Captures)
+	h1 = Heuristic(state.move, player.Symbol, player.Captures)
 	state.move.Node = strings.Join([]string{state.move.Node[:state.move.index], EmptySymbol, state.move.Node[state.move.index+1:]}, "")
-	info, err := PutStone(state.move.Node, state.move.index, &opponent)
-	newState := State{move: Move{
-		Node:            info.Node,
-		index:           info.index,
-		Captures:        info.Captures,
-		capturedIndexes: info.capturedIndexes,
-	},
-		machinePlayer: player,
-		humanPlayer:   opponent, //TO DO not always so but we don't use it
-	}
+	move, err := PutStone(state.move.Node, state.move.index, &opponent)
 	if err == nil {
-		h2 = Heuristic(newState, opponent.Symbol, opponent.Captures)
+		h2 = Heuristic(move, opponent.Symbol, opponent.Captures)
 	} else {
 		h2 = 0
 	}
